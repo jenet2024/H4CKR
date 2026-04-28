@@ -1,0 +1,17 @@
+=== LOGS SERVEUR — server-prod-01 ===
+Date: 2024-01-15
+
+[2024-01-15 03:40:00] INFO  — Démarrage du service SSH
+[2024-01-15 03:41:12] INFO  — Connexion : user=deploy | IP: 10.0.0.5
+[2024-01-15 03:42:11] WARN  — Tentative connexion échouée : user=admin | IP: 192.168.42.13
+[2024-01-15 03:42:33] WARN  — Tentative connexion échouée : user=root  | IP: 192.168.42.13
+[2024-01-15 03:42:45] WARN  — Tentative connexion échouée : user=admin | IP: 192.168.42.13
+[2024-01-15 03:43:02] INFO  — Connexion réussie : user=s3cur1ty_t3am  | IP: 192.168.42.13
+[2024-01-15 03:43:15] INFO  — Accès fichier : /var/secret/vault.key
+[2024-01-15 03:43:44] INFO  — Accès fichier : /etc/shadow
+[2024-01-15 03:44:00] WARN  — Fichier modifié : /etc/passwd
+[2024-01-15 03:44:30] ERROR — Intrusion détectée — Source IP: 192.168.42.13
+[2024-01-15 03:44:31] ERROR — Exfiltration de données suspectée
+[2024-01-15 03:44:45] INFO  — Déconnexion : user=s3cur1ty_t3am
+[2024-01-15 03:45:00] WARN  — Alerte sécurité envoyée à l'équipe SOC
+=== FIN DES LOGS ===

@@ -1,0 +1,82 @@
+.terminal {
+  background: #050d05;
+  border: 1px solid #1e3a1e;
+  border-radius: 12px;
+  overflow: hidden;
+  font-family: "Share Tech Mono", monospace;
+  font-size: 13px;
+}
+
+.titleBar {
+  background: #0a150a;
+  padding: 10px 16px;
+  border-bottom: 1px solid #1e3a1e;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+.red    { background: #ff5f57; }
+.yellow { background: #febc2e; }
+.green  { background: #28c840; }
+
+.titleText {
+  color: #4a7a4a;
+  font-size: 11px;
+  margin-left: 8px;
+  letter-spacing: 1px;
+}
+
+.body {
+  padding: 20px 20px 16px;
+  line-height: 2.1;
+}
+
+.line { display: flex; gap: 10px; align-items: baseline; }
+
+.prompt  { color: #39ff14; flex-shrink: 0; }
+.text    { color: #c8f5c8; }
+.cmd     { color: #c8f5c8; }
+.out     { color: #5a9e5a; }
+.warn    { color: #f0a500; }
+.success { color: #39ff14; }
+
+.cursor {
+  display: inline-block;
+  width: 9px;
+  height: 16px;
+  background: #39ff14;
+  animation: blink 1s infinite;
+  vertical-align: middle;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+.protocols {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 12px 16px 16px;
+  border-top: 1px solid #1e3a1e;
+}
+
+.proto {
+  border: 1px solid #1e3a1e;
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-size: 11px;
+  color: #4a7a4a;
+  letter-spacing: 2px;
+  text-align: center;
+  background: rgba(57, 255, 20, 0.02);
+}
+
+.protoActive {
+  color: #39ff14;
+  border-color: rgba(57, 255, 20, 0.25);
+  background: rgba(57, 255, 20, 0.05);
+}

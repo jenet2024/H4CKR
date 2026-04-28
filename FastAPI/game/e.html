@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>QCM DevOps & CI/CD – Full Examen (60 questions)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 20px auto;
+            line-height: 1.5;
+        }
+        h1 {
+            text-align: center;
+        }
+        #question-container {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        .option {
+            margin: 8px 0;
+            padding: 6px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .option.correct {
+            background-color: #c8f7c5;
+        }
+        .option.incorrect {
+            background-color: #f7c5c5;
+        }
+        .option input {
+            margin-right: 8px;
+        }
+        #navigation {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+        button {
+            padding: 8px 16px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        #description {
+            margin-top: 15px;
+            font-style: italic;
+            color: #555;
+        }
+        #progress {
+            margin-top: 10px;
+            text-align: right;
+            font-size: 14px;
+            color: #333;
+        }
+        #correct-answer {
+            margin-top: 8px;
+            font-weight: bold;
+            color: #222;
+        }
+    </style>
+</head>
+<body>
+
+<h1>QCM DevOps & CI/CD – Full Examen (60 questions)</h1>
+<p>
+    QCM niveau examen, mélange de culture DevOps (CALMS, DORA, SRE, Agile vs DevOps) et de pratique CI/CD (GitLab, YAML,
+    runners, scripts Shell, Docker, Container Registry, bonnes pratiques). Clique sur une réponse : elle devient
+    <span style="color:green;">verte</span> si elle est correcte, <span style="color:red;">rouge</span> si elle est fausse.
+    La bonne réponse et une explication s’affichent en dessous.
+</p>
+
+<div id="question-container">
+    <div id="question-text"></div>
+    <div id="options"></div>
+    <div id="correct-answer"></div>
+    <div id="description"></div>
+    <div id="progress"></div>
+</div>
+
+<div id="navigation">
+    <button id="prev-btn">Précédent</button>
+    <button id="next-btn">Suivant</button>
+</div>
+
+<script>
+const questions = [
+    // 1–20 : DevOps / Culture / DORA / SRE / Agile
+    {
+        question: "1. DevOps est défini dans le cours comme :",
+        options: [
+            "Un outil d’automatisation des builds",
+            "Une culture + des pratiques + des outils pour livrer plus vite et plus fiable",
+            "Une simple méthode de test",
+            "Un nouveau framework web"
+        ],
+        correctIndex: 1,
+        description: "DevOps = Culture + Pratiques + Outils pour aligner Dev et Ops et livrer de la valeur plus rapidement et de manière fiable.",
+        correctText: "Réponse correcte : Une culture + des pratiques + des outils pour livrer plus vite et plus fiable."
+    },
+    {
+        question: "2. Le “mur de la confusion” décrit :",
+        options: [
+            "Un problème entre Dev et UX",
+            "Le conflit entre Dev (vitesse) et Ops (stabilité)",
+            "Un problème entre Dev et RH",
+            "Un problème entre Ops et Finance"
+        ],
+        correctIndex: 1,
+        description: "Les Devs veulent livrer vite, les Ops veulent la stabilité : sans DevOps, cela crée un mur de la confusion.",
+        correctText: "Réponse correcte : Le conflit entre Dev (vitesse) et Ops (stabilité)."
+    },
+    {
+        question: "3. CALMS signifie :",
+        options: [
+            "Cloud, Agile, Lean, Monitoring, Security",
+            "Culture, Automation, Lean, Measurement, Sharing",
+            "Containers, Automation, Logs, Metrics, Security",
+            "Culture, Agile, Logs, Monitoring, Sharing"
+        ],
+        correctIndex: 1,
+        description: "CALMS = Culture, Automation, Lean, Measurement, Sharing.",
+        correctText: "Réponse correcte : Culture, Automation, Lean, Measurement, Sharing."
+    },
+    {
+        question: "4. Le pilier “Lean” dans CALMS vise à :",
+        options: [
+            "Ajouter plus de processus",
+            "Éliminer le gaspillage et optimiser les flux",
+            "Supprimer les tests",
+            "Augmenter la taille des équipes"
+        ],
+        correctIndex: 1,
+        description: "Lean = réduire le gaspillage, limiter le WIP, livrer souvent et petit.",
+        correctText: "Réponse correcte : Éliminer le gaspillage et optimiser les flux."
+    },
+    {
+        question: "5. Le pilier “Sharing” dans CALMS implique :",
+        options: [
+            "Garder l’information pour soi",
+            "Partager les connaissances, la documentation et les post-mortems sans blâme",
+            "Partager uniquement les succès",
+            "Partager uniquement les erreurs des autres"
+        ],
+        correctIndex: 1,
+        description: "Sharing = culture de partage, documentation, post-mortems sans blâme.",
+        correctText: "Réponse correcte : Partager les connaissances, la documentation et les post-mortems sans blâme."
+    },
+    {
+        question: "6. Agile vs DevOps :",
+        options: [
+            "Agile remplace DevOps",
+            "DevOps remplace Agile",
+            "Agile optimise le développement, DevOps optimise toute la chaîne jusqu’à la production",
+            "Ils sont identiques"
+        ],
+        correctIndex: 2,
+        description: "Agile se concentre sur le développement, DevOps sur la livraison jusqu’en production. Ils sont complémentaires.",
+        correctText: "Réponse correcte : Agile optimise le développement, DevOps optimise toute la chaîne jusqu’à la production."
+    },
+    {
+        question: "7. SRE (Site Reliability Engineering) est :",
+        options: [
+            "Un outil de monitoring",
+            "L’implémentation DevOps de Google",
+            "Un langage de programmation",
+            "Un framework de tests"
+        ],
+        correctIndex: 1,
+        description: "SRE applique les principes du software engineering aux opérations, chez Google.",
+        correctText: "Réponse correcte : L’implémentation DevOps de Google."
+    },
+    {
+        question: "8. Un SLI (Service Level Indicator) est :",
+        options: [
+            "Un objectif de service",
+            "Une métrique mesurable (latence, dispo, etc.)",
+            "Un budget marketing",
+            "Un script de déploiement"
+        ],
+        correctIndex: 1,
+        description: "SLI = métrique mesurable (latence, disponibilité, erreurs...).",
+        correctText: "Réponse correcte : Une métrique mesurable (latence, dispo, etc.)."
+    },
+    {
+        question: "9. Un SLO (Service Level Objective) est :",
+        options: [
+            "Une métrique brute",
+            "Un objectif de niveau de service (ex: 99.9% de dispo)",
+            "Un budget d’erreur",
+            "Un log système"
+        ],
+        correctIndex: 1,
+        description: "SLO = objectif de niveau de service, ex: 99.9% de disponibilité.",
+        correctText: "Réponse correcte : Un objectif de niveau de service (ex: 99.9% de dispo)."
+    },
+    {
+        question: "10. L’Error Budget sert à :",
+        options: [
+            "Limiter le nombre de développeurs",
+            "Limiter le nombre de tests",
+            "Équilibrer innovation et stabilité en définissant un budget d’erreurs acceptable",
+            "Limiter le nombre de branches"
+        ],
+        correctIndex: 2,
+        description: "Si le budget d’erreurs est épuisé, on stoppe les nouvelles features pour stabiliser.",
+        correctText: "Réponse correcte : Équilibrer innovation et stabilité en définissant un budget d’erreurs acceptable."
+    },
+    {
+        question: "11. Les 4 métriques DORA sont :",
+        options: [
+            "CPU, RAM, disque, réseau",
+            "Deployment Frequency, Lead Time, MTTR, Change Failure Rate",
+            "Build Time, Test Time, Deploy Time, Rollback Time",
+            "Commits, branches, merges, tags"
+        ],
+        correctIndex: 1,
+        description: "DORA : fréquence de déploiement, lead time, MTTR, taux d’échec des changements.",
+        correctText: "Réponse correcte : Deployment Frequency, Lead Time, MTTR, Change Failure Rate."
+    },
+    {
+        question: "12. Une équipe “élite” selon DORA :",
+        options: [
+            "Déploie rarement avec beaucoup d’échecs",
+            "Déploie souvent avec peu d’échecs et un MTTR faible",
+            "Ne déploie jamais",
+            "Déploie souvent avec un MTTR très long"
+        ],
+        correctIndex: 1,
+        description: "Équipe élite : déploiements fréquents, peu d’échecs, MTTR court.",
+        correctText: "Réponse correcte : Déploie souvent avec peu d’échecs et un MTTR faible."
+    },
+    {
+        question: "13. CI/CD signifie :",
+        options: [
+            "Continuous Integration / Continuous Delivery ou Deployment",
+            "Code Integration / Code Deployment",
+            "Cloud Integration / Cloud Delivery",
+            "Container Integration / Container Deployment"
+        ],
+        correctIndex: 0,
+        description: "CI/CD = Continuous Integration et Continuous Delivery/Deployment.",
+        correctText: "Réponse correcte : Continuous Integration / Continuous Delivery ou Deployment."
+    },
+    {
+        question: "14. La CI (Continuous Integration) consiste à :",
+        options: [
+            "Déployer automatiquement en production",
+            "Compiler, tester et valider le code à chaque commit",
+            "Créer des tickets Jira",
+            "Surveiller les logs"
+        ],
+        correctIndex: 1,
+        description: "CI = build + tests automatiques à chaque commit.",
+        correctText: "Réponse correcte : Compiler, tester et valider le code à chaque commit."
+    },
+    {
+        question: "15. La Continuous Delivery signifie :",
+        options: [
+            "Le code est toujours déployé automatiquement en prod",
+            "Le code est toujours déployé en local",
+            "Le code est prêt à être déployé en prod à tout moment (déclenchement manuel)",
+            "Le code n’est jamais déployé"
+        ],
+        correctIndex: 2,
+        description: "Continuous Delivery = pipeline prêt à déployer, mais déclenchement manuel.",
+        correctText: "Réponse correcte : Le code est prêt à être déployé en prod à tout moment (déclenchement manuel)."
+    },
+    {
+        question: "16. La Continuous Deployment signifie :",
+        options: [
+            "Le code validé est déployé automatiquement en production",
+            "Le code est déployé une fois par mois",
+            "Le code est déployé uniquement en staging",
+            "Le code n’est jamais déployé automatiquement"
+        ],
+        correctIndex: 0,
+        description: "Continuous Deployment = déploiement automatique en production après validation.",
+        correctText: "Réponse correcte : Le code validé est déployé automatiquement en production."
+    },
+    {
+        question: "17. Dans l’exemple du cours, Amazon déploie en production :",
+        options: [
+            "Une fois par mois",
+            "Une fois par semaine",
+            "Toutes les 11,7 secondes en moyenne",
+            "Une fois par an"
+        ],
+        correctIndex: 2,
+        description: "Amazon déploie en moyenne toutes les 11,7 secondes grâce à un pipeline très automatisé.",
+        correctText: "Réponse correcte : Toutes les 11,7 secondes en moyenne."
+    },
+    {
+        question: "18. Une transformation DevOps réussie commence par :",
+        options: [
+            "Les outils avant la culture",
+            "La culture avant les outils",
+            "Le recrutement avant tout",
+            "Le cloud avant tout"
+        ],
+        correctIndex: 1,
+        description: "Le cours insiste : commencez par la culture (collaboration, partage) avant les outils.",
+        correctText: "Réponse correcte : La culture avant les outils."
+    },
+    {
+        question: "19. Un exemple de pratique Lean en DevOps est :",
+        options: [
+            "Augmenter le WIP",
+            "Réduire les temps d’attente et livrer plus souvent",
+            "Supprimer les tests",
+            "Multiplier les validations manuelles"
+        ],
+        correctIndex: 1,
+        description: "Lean = réduire les temps d’attente, limiter le WIP, livrer fréquemment.",
+        correctText: "Réponse correcte : Réduire les temps d’attente et livrer plus souvent."
+    },
+    {
+        question: "20. Une pratique de “Sharing” est :",
+        options: [
+            "Cacher les incidents",
+            "Faire des post-mortems sans blâme et documenter",
+            "Pointer les fautes des individus",
+            "Supprimer la documentation"
+        ],
+        correctIndex: 1,
+        description: "Sharing = post-mortems sans blâme, documentation partagée.",
+        correctText: "Réponse correcte : Faire des post-mortems sans blâme et documenter."
+    },
+
+    // 21–40 : CI/CD GitLab, YAML, runners, variables, scripts Shell
+    {
+        question: "21. Le fichier de configuration GitLab CI/CD s’appelle :",
+        options: [
+            "gitlab-ci.json",
+            ".gitlab-ci.yml",
+            "ci-config.yaml",
+            "pipeline.conf"
+        ],
+        correctIndex: 1,
+        description: "Le fichier de configuration GitLab CI/CD est .gitlab-ci.yml à la racine du projet.",
+        correctText: "Réponse correcte : .gitlab-ci.yml."
+    },
+    {
+        question: "22. Dans GitLab CI, un pipeline est :",
+        options: [
+            "Un seul job",
+            "Une branche Git",
+            "Un ensemble de jobs organisés en stages",
+            "Un runner spécifique"
+        ],
+        correctIndex: 2,
+        description: "Un pipeline = ensemble de jobs organisés en stages (build, test, deploy...).",
+        correctText: "Réponse correcte : Un ensemble de jobs organisés en stages."
+    },
+    {
+        question: "23. Dans GitLab CI, un stage est :",
+        options: [
+            "Une machine d’exécution",
+            "Une phase du pipeline (build, test, deploy...)",
+            "Un fichier de config",
+            "Un type de runner"
+        ],
+        correctIndex: 1,
+        description: "Un stage est une phase du pipeline, les stages s’exécutent séquentiellement.",
+        correctText: "Réponse correcte : Une phase du pipeline (build, test, deploy...)."
+    },
+    {
+        question: "24. Plusieurs jobs dans le même stage :",
+        options: [
+            "S’exécutent en parallèle",
+            "S’exécutent toujours séquentiellement",
+            "Sont interdits",
+            "Sont ignorés"
+        ],
+        correctIndex: 0,
+        description: "Les jobs d’un même stage s’exécutent en parallèle par défaut.",
+        correctText: "Réponse correcte : S’exécutent en parallèle."
+    },
+    {
+        question: "25. Un runner GitLab est :",
+        options: [
+            "Un fichier YAML",
+            "Une machine/agent qui exécute les jobs",
+            "Une branche Git",
+            "Un outil de monitoring"
+        ],
+        correctIndex: 1,
+        description: "Le runner est la machine (VM, container, serveur) qui exécute les jobs CI/CD.",
+        correctText: "Réponse correcte : Une machine/agent qui exécute les jobs."
+    },
+    {
+        question: "26. Les “shared runners” sont :",
+        options: [
+            "Des runners dédiés à un seul projet",
+            "Des runners fournis et partagés par GitLab.com",
+            "Des runners locaux uniquement",
+            "Des runners réservés aux admins"
+        ],
+        correctIndex: 1,
+        description: "Les shared runners sont fournis par GitLab et partagés entre plusieurs projets.",
+        correctText: "Réponse correcte : Des runners fournis et partagés par GitLab.com."
+    },
+    {
+        question: "27. La clé stages: dans .gitlab-ci.yml sert à :",
+        options: [
+            "Définir les jobs",
+            "Définir l’ordre des phases du pipeline",
+            "Définir les runners",
+            "Définir les variables"
+        ],
+        correctIndex: 1,
+        description: "stages: définit l’ordre des phases (build, test, deploy...).",
+        correctText: "Réponse correcte : Définir l’ordre des phases du pipeline."
+    },
+    {
+        question: "28. Le mot-clé script: dans un job contient :",
+        options: [
+            "La liste des runners",
+            "Les commandes Shell à exécuter",
+            "Les variables d’environnement",
+            "Les branches autorisées"
+        ],
+        correctIndex: 1,
+        description: "script: contient les commandes Shell exécutées par le job.",
+        correctText: "Réponse correcte : Les commandes Shell à exécuter."
+    },
+    {
+        question: "29. Le mot-clé only: sert à :",
+        options: [
+            "Limiter le temps d’exécution",
+            "Limiter les branches ou conditions d’exécution du job",
+            "Limiter la mémoire",
+            "Limiter le nombre de runners"
+        ],
+        correctIndex: 1,
+        description: "only: permet de définir sur quelles branches ou conditions le job s’exécute.",
+        correctText: "Réponse correcte : Limiter les branches ou conditions d’exécution du job."
+    },
+    {
+        question: "30. Le mot-clé when: manual signifie :",
+        options: [
+            "Le job ne s’exécute jamais",
+            "Le job s’exécute automatiquement",
+            "Le job doit être déclenché manuellement dans l’interface GitLab",
+            "Le job est ignoré"
+        ],
+        correctIndex: 2,
+        description: "when: manual rend le job manuel : il faut cliquer pour le lancer.",
+        correctText: "Réponse correcte : Le job doit être déclenché manuellement dans l’interface GitLab."
+    },
+    {
+        question: "31. before_script: dans GitLab CI :",
+        options: [
+            "S’exécute après le script",
+            "S’exécute avant chaque job",
+            "Ne s’exécute qu’en cas d’erreur",
+            "Est réservé aux admins"
+        ],
+        correctIndex: 1,
+        description: "before_script s’exécute avant le script de chaque job.",
+        correctText: "Réponse correcte : S’exécute avant chaque job."
+    },
+    {
+        question: "32. after_script: dans GitLab CI :",
+        options: [
+            "Peut faire échouer le job",
+            "Ne s’exécute jamais en cas d’échec",
+            "S’exécute après le script, même en cas d’échec, et ne peut pas faire échouer le job",
+            "Remplace le script"
+        ],
+        correctIndex: 2,
+        description: "after_script s’exécute toujours après le script, même en cas d’échec, et ne peut pas faire échouer le job.",
+        correctText: "Réponse correcte : S’exécute après le script, même en cas d’échec, et ne peut pas faire échouer le job."
+    },
+    {
+        question: "33. CI_COMMIT_BRANCH contient :",
+        options: [
+            "Le hash du commit",
+            "Le nom de la branche",
+            "Le nom du projet",
+            "L’URL du registry"
+        ],
+        correctIndex: 1,
+        description: "CI_COMMIT_BRANCH = nom de la branche (main, develop, feature/...).",
+        correctText: "Réponse correcte : Le nom de la branche."
+    },
+    {
+        question: "34. CI_COMMIT_SHA contient :",
+        options: [
+            "Le hash complet du commit",
+            "Le nom de la branche",
+            "Le nom du projet",
+            "L’URL du registry"
+        ],
+        correctIndex: 0,
+        description: "CI_COMMIT_SHA = hash complet du commit.",
+        correctText: "Réponse correcte : Le hash complet du commit."
+    },
+    {
+        question: "35. Une bonne pratique pour les secrets dans GitLab CI est :",
+        options: [
+            "Les hardcoder dans .gitlab-ci.yml",
+            "Les mettre dans le code source",
+            "Utiliser les variables protégées GitLab",
+            "Les stocker dans un fichier texte commité"
+        ],
+        correctIndex: 2,
+        description: "Les secrets doivent être stockés dans les variables protégées GitLab, pas dans le code.",
+        correctText: "Réponse correcte : Utiliser les variables protégées GitLab."
+    },
+    {
+        question: "36. Dans un script Shell robuste, set -e sert à :",
+        options: [
+            "Ignorer les erreurs",
+            "Arrêter le script à la première erreur",
+            "Afficher plus de logs",
+            "Changer de shell"
+        ],
+        correctIndex: 1,
+        description: "set -e : le script s’arrête dès qu’une commande retourne un code d’erreur.",
+        correctText: "Réponse correcte : Arrêter le script à la première erreur."
+    },
+    {
+        question: "37. set -u dans un script Shell signifie :",
+        options: [
+            "Ignorer les variables non définies",
+            "Erreur si une variable non définie est utilisée",
+            "Activer le mode verbeux",
+            "Changer le shell en zsh"
+        ],
+        correctIndex: 1,
+        description: "set -u : erreur si une variable non définie est utilisée.",
+        correctText: "Réponse correcte : Erreur si une variable non définie est utilisée."
+    },
+    {
+        question: "38. set -o pipefail permet :",
+        options: [
+            "D’ignorer les erreurs dans un pipe",
+            "De considérer le code d’erreur d’une commande dans un pipe",
+            "D’accélérer les pipes",
+            "De changer le séparateur de pipe"
+        ],
+        correctIndex: 1,
+        description: "set -o pipefail : le pipe échoue si une des commandes échoue.",
+        correctText: "Réponse correcte : De considérer le code d’erreur d’une commande dans un pipe."
+    },
+    {
+        question: "39. Une bonne pratique pour les scripts complexes dans CI est :",
+        options: [
+            "Tout écrire inline dans .gitlab-ci.yml",
+            "Créer des fichiers .sh séparés et les appeler depuis le pipeline",
+            "Ne jamais utiliser de scripts",
+            "Utiliser uniquement Python"
+        ],
+        correctIndex: 1,
+        description: "Mettre les scripts dans des fichiers .sh (ex: dossier ci/) rend le code plus lisible et testable.",
+        correctText: "Réponse correcte : Créer des fichiers .sh séparés et les appeler depuis le pipeline."
+    },
+    {
+        question: "40. Dans le TP2, le job security-check doit :",
+        options: [
+            "Faire échouer le job si 'password' est trouvé",
+            "Ne jamais s’exécuter",
+            "Afficher un warning si 'password' est trouvé mais ne pas faire échouer le job",
+            "Supprimer les fichiers contenant 'password'"
+        ],
+        correctIndex: 2,
+        description: "Le TP précise : warning si 'password' trouvé, mais le job ne doit pas échouer.",
+        correctText: "Réponse correcte : Afficher un warning si 'password' est trouvé mais ne pas faire échouer le job."
+    },
+
+    // 41–60 : Docker, GitLab Registry, bonnes pratiques, cas pratiques
+    {
+        question: "41. Docker est utilisé dans les pipelines CI/CD principalement pour :",
+        options: [
+            "Remplacer Git",
+            "Fournir un environnement de build reproductible et isolé",
+            "Supprimer les tests",
+            "Éviter d’utiliser Linux"
+        ],
+        correctIndex: 1,
+        description: "Docker permet un environnement de build identique partout, isolé et reproductible.",
+        correctText: "Réponse correcte : Fournir un environnement de build reproductible et isolé."
+    },
+    {
+        question: "42. GitLab Container Registry sert à :",
+        options: [
+            "Stocker des fichiers texte",
+            "Stocker des images Docker liées au projet",
+            "Stocker des logs",
+            "Stocker des branches Git"
+        ],
+        correctIndex: 1,
+        description: "GitLab Container Registry est un registry Docker intégré à GitLab.",
+        correctText: "Réponse correcte : Stocker des images Docker liées au projet."
+    },
+    {
+        question: "43. L’URL du registry GitLab suit le format :",
+        options: [
+            "registry.gitlab.com/<username>/<project>",
+            "docker.io/<project>",
+            "gitlab.com/registry/<project>",
+            "hub.docker.com/<username>/<project>"
+        ],
+        correctIndex: 0,
+        description: "Format : registry.gitlab.com/&lt;username&gt;/&lt;project&gt;.",
+        correctText: "Réponse correcte : registry.gitlab.com/&lt;username&gt;/&lt;project&gt;."
+    },
+    {
+        question: "44. Pour utiliser Docker-in-Docker (dind) dans GitLab CI, on utilise :",
+        options: [
+            "image: alpine uniquement",
+            "image: docker:latest et services: [\"docker:dind\"]",
+            "image: node:18-alpine",
+            "services: gitlab:dind"
+        ],
+        correctIndex: 1,
+        description: "On utilise image: docker:latest et services: docker:dind.",
+        correctText: "Réponse correcte : image: docker:latest et services: [\"docker:dind\"]."
+    },
+    {
+        question: "45. Pour se connecter au GitLab Container Registry dans un job, on utilise :",
+        options: [
+            "git login registry",
+            "docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY",
+            "kubectl login",
+            "ssh registry.gitlab.com"
+        ],
+        correctIndex: 1,
+        description: "La commande docker login utilise CI_REGISTRY_USER et CI_REGISTRY_PASSWORD.",
+        correctText: "Réponse correcte : docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY."
+    },
+    {
+        question: "46. CI_REGISTRY_IMAGE contient :",
+        options: [
+            "L’URL du projet Git",
+            "Le chemin complet de l’image dans le registry",
+            "Le nom du runner",
+            "Le hash du commit"
+        ],
+        correctIndex: 1,
+        description: "CI_REGISTRY_IMAGE = chemin complet de l’image dans le registry GitLab.",
+        correctText: "Réponse correcte : Le chemin complet de l’image dans le registry."
+    },
+    {
+        question: "47. Une bonne pratique de tagging d’images Docker est :",
+        options: [
+            "Utiliser uniquement latest",
+            "Utiliser latest + commit SHA + version sémantique (v1.2.3)",
+            "Ne jamais tagger les images",
+            "Utiliser des tags aléatoires"
+        ],
+        correctIndex: 1,
+        description: "On tag souvent avec latest, le hash de commit et une version sémantique.",
+        correctText: "Réponse correcte : Utiliser latest + commit SHA + version sémantique (v1.2.3)."
+    },
+    {
+        question: "48. Une image Docker légère est recommandée car :",
+        options: [
+            "Elle est plus jolie",
+            "Elle accélère les builds et les déploiements",
+            "Elle consomme plus de ressources",
+            "Elle est obligatoire pour GitLab"
+        ],
+        correctIndex: 1,
+        description: "Images légères = builds plus rapides, déploiements plus rapides, moins de stockage.",
+        correctText: "Réponse correcte : Elle accélère les builds et les déploiements."
+    },
+    {
+        question: "49. Une bonne pratique de sécurité pour les images Docker est :",
+        options: [
+            "Mettre les secrets dans l’image",
+            "Scanner les images pour les vulnérabilités",
+            "Ne jamais mettre à jour les dépendances",
+            "Utiliser des images sans version"
+        ],
+        correctIndex: 1,
+        description: "Scan de vulnérabilités (Trivy, GitLab Container Scanning, etc.).",
+        correctText: "Réponse correcte : Scanner les images pour les vulnérabilités."
+    },
+    {
+        question: "50. Dans le TP3, l’application statique est servie par :",
+        options: [
+            "Apache",
+            "Nginx (nginx:alpine)",
+            "Node.js directement",
+            "Tomcat"
+        ],
+        correctIndex: 1,
+        description: "Le Dockerfile du TP3 utilise nginx:alpine pour servir index.html.",
+        correctText: "Réponse correcte : Nginx (nginx:alpine)."
+    },
+    {
+        question: "51. Dans le TP3, le stage push doit :",
+        options: [
+            "S’exécuter sur toutes les branches",
+            "S’exécuter uniquement sur la branche main",
+            "Ne jamais s’exécuter",
+            "S’exécuter uniquement sur develop"
+        ],
+        correctIndex: 1,
+        description: "Le TP3 précise : le stage push ne doit s’exécuter que sur la branche main.",
+        correctText: "Réponse correcte : S’exécuter uniquement sur la branche main."
+    },
+    {
+        question: "52. Une des bonnes pratiques mentionnées pour les runners est :",
+        options: [
+            "Donner tous les accès à tous les runners",
+            "Sécuriser les runners car ils ont accès aux secrets",
+            "Ne jamais utiliser de runners Docker",
+            "Utiliser un seul runner pour toute l’entreprise"
+        ],
+        correctIndex: 1,
+        description: "Les runners ont accès aux secrets (tokens, clés), il faut donc les sécuriser.",
+        correctText: "Réponse correcte : Sécuriser les runners car ils ont accès aux secrets."
+    },
+    {
+        question: "53. Une bonne pratique de nommage des jobs est :",
+        options: [
+            "job1, job2, job3",
+            "build-frontend, test-api, deploy-staging",
+            "a, b, c",
+            "random-job-name"
+        ],
+        correctIndex: 1,
+        description: "Des noms explicites facilitent la compréhension et le debug.",
+        correctText: "Réponse correcte : build-frontend, test-api, deploy-staging."
+    },
+    {
+        question: "54. Une raison d’utiliser des artifacts dans GitLab CI est :",
+        options: [
+            "Créer des branches Git",
+            "Transmettre des fichiers générés d’un job à un autre",
+            "Créer des runners",
+            "Stocker des logs système"
+        ],
+        correctIndex: 1,
+        description: "Les artifacts permettent de transmettre des fichiers (binaire, rapport de tests, etc.) entre jobs.",
+        correctText: "Réponse correcte : Transmettre des fichiers générés d’un job à un autre."
+    },
+    {
+        question: "55. Dans la stack DevOps moderne du cours, l’Infrastructure as Code est faite avec :",
+        options: [
+            "WordPress + MySQL",
+            "Terraform + Ansible",
+            "Photoshop + Git",
+            "Excel + PowerPoint"
+        ],
+        correctIndex: 1,
+        description: "Stack DevOps moderne : Terraform + Ansible, validés par pipeline.",
+        correctText: "Réponse correcte : Terraform + Ansible."
+    },
+    {
+        question: "56. Une bonne pratique de monitoring en DevOps est :",
+        options: [
+            "Ne pas monitorer pour gagner du temps",
+            "Utiliser Prometheus + Grafana avec alertes automatiques",
+            "Utiliser uniquement des logs locaux",
+            "Monitorer uniquement en production"
+        ],
+        correctIndex: 1,
+        description: "Le cours cite Prometheus + Grafana + alertes automatiques.",
+        correctText: "Réponse correcte : Utiliser Prometheus + Grafana avec alertes automatiques."
+    },
+    {
+        question: "57. Une bonne pratique de sécurité dans un pipeline est :",
+        options: [
+            "Ne jamais faire de scans",
+            "Intégrer SAST/DAST et scans de vulnérabilités dans le pipeline",
+            "Faire les scans uniquement en prod",
+            "Scanner uniquement les logs"
+        ],
+        correctIndex: 1,
+        description: "Le cours mentionne SAST/DAST et scans de vulnérabilités intégrés au pipeline.",
+        correctText: "Réponse correcte : Intégrer SAST/DAST et scans de vulnérabilités dans le pipeline."
+    },
+    {
+        question: "58. Une bonne pratique de déploiement continu est :",
+        options: [
+            "Déployer sans tests",
+            "Avoir des tests automatisés fiables avant chaque déploiement",
+            "Déployer uniquement le vendredi soir",
+            "Ne jamais faire de rollback"
+        ],
+        correctIndex: 1,
+        description: "Déploiement continu = tests automatisés fiables + possibilité de rollback.",
+        correctText: "Réponse correcte : Avoir des tests automatisés fiables avant chaque déploiement."
+    },
+    {
+        question: "59. Une bonne pratique de gestion des incidents en DevOps est :",
+        options: [
+            "Chercher un coupable",
+            "Faire un post-mortem sans blâme et documenter les leçons",
+            "Ignorer l’incident",
+            "Supprimer les logs"
+        ],
+        correctIndex: 1,
+        description: "Post-mortem sans blâme = culture d’apprentissage.",
+        correctText: "Réponse correcte : Faire un post-mortem sans blâme et documenter les leçons."
+    },
+    {
+        question: "60. Le message clé du cours sur DevOps est :",
+        options: [
+            "DevOps = outils uniquement",
+            "DevOps = culture avant les outils",
+            "DevOps = uniquement Docker",
+            "DevOps = uniquement GitLab"
+        ],
+        correctIndex: 1,
+        description: "Le cours insiste : commencez par la culture (collaboration, partage) avant les outils.",
+        correctText: "Réponse correcte : DevOps = culture avant les outils."
+    }
+];
+
+let currentIndex = 0;
+let userAnswers = new Array(questions.length).fill(null);
+
+function renderQuestion() {
+    const q = questions[currentIndex];
+    const questionText = document.getElementById("question-text");
+    const optionsDiv = document.getElementById("options");
+    const descriptionDiv = document.getElementById("description");
+    const progressDiv = document.getElementById("progress");
+    const correctAnswerDiv = document.getElementById("correct-answer");
+
+    questionText.textContent = q.question;
+    optionsDiv.innerHTML = "";
+    descriptionDiv.textContent = "";
+    correctAnswerDiv.textContent = "";
+    progressDiv.textContent = `Question ${currentIndex + 1} / ${questions.length}`;
+
+    q.options.forEach((opt, index) => {
+        const optionDiv = document.createElement("div");
+        optionDiv.className = "option";
+        const input = document.createElement("input");
+        input.type = "radio";
+        input.name = "option";
+        input.value = index;
+
+        if (userAnswers[currentIndex] === index) {
+            if (index === q.correctIndex) {
+                optionDiv.classList.add("correct");
+            } else {
+                optionDiv.classList.add("incorrect");
+            }
+            correctAnswerDiv.textContent = q.correctText;
+            descriptionDiv.textContent = q.description;
+        }
+
+        const label = document.createElement("label");
+        label.textContent = opt;
+
+        optionDiv.appendChild(input);
+        optionDiv.appendChild(label);
+
+        optionDiv.addEventListener("click", () => {
+            handleAnswer(index, optionDiv, descriptionDiv, correctAnswerDiv);
+        });
+
+        optionsDiv.appendChild(optionDiv);
+    });
+}
+
+function handleAnswer(selectedIndex, optionDiv, descriptionDiv, correctAnswerDiv) {
+    const q = questions[currentIndex];
+    userAnswers[currentIndex] = selectedIndex;
+
+    const allOptions = document.querySelectorAll("#options .option");
+    allOptions.forEach(opt => opt.classList.remove("correct", "incorrect"));
+
+    if (selectedIndex === q.correctIndex) {
+        optionDiv.classList.add("correct");
+    } else {
+        optionDiv.classList.add("incorrect");
+    }
+
+    correctAnswerDiv.textContent = q.correctText;
+    descriptionDiv.textContent = q.description;
+}
+
+document.getElementById("prev-btn").addEventListener("click", () => {
+    if (currentIndex > 0) {
+        currentIndex--;
+        renderQuestion();
+    }
+});
+
+document.getElementById("next-btn").addEventListener("click", () => {
+    if (currentIndex < questions.length - 1) {
+        currentIndex++;
+        renderQuestion();
+    }
+});
+
+renderQuestion();
+</script>
+
+</body>
+</html>

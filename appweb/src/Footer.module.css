@@ -1,0 +1,35 @@
+.footer {
+  border-top: 1px solid #1e3a1e;
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.4);
+  position: relative;
+  z-index: 1;
+}
+
+.copy {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 11px;
+  color: #3a5a3a;
+  letter-spacing: 1px;
+}
+
+.badges { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.badge {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 10px;
+  color: #4a7a4a;
+  border: 1px solid #1e3a1e;
+  border-radius: 4px;
+  padding: 3px 10px;
+  letter-spacing: 1px;
+}
+
+@media (max-width: 480px) {
+  .footer { padding: 14px 16px; justify-content: center; text-align: center; }
+}

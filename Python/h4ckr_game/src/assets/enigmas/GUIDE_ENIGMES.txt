@@ -1,0 +1,55 @@
+=== H4CKR — GUIDE DES FICHIERS D'ÉNIGMES ===
+
+NIVEAU DÉBUTANT
+===============
+
+mission_01.png
+  Type    : Stéganographie (métadonnées PNG)
+  Réponse : GHOST
+  Méthode : Lisez le champ "Comment" des métadonnées PNG
+            Outils : exiftool, PIL/Pillow, propriétés fichier
+
+signal_01.wav
+  Type    : Audio inversé
+  Réponse : CYBER
+  Méthode : Ouvrez dans Audacity → Effets → Inverser
+            Le mot 'CYBER' est prononcé à l'envers
+
+data_07.txt
+  Type    : ROT13
+  Réponse : SECURE
+  Méthode : Décodez 'FRPHER' via ROT13
+            Python : codecs.decode('FRPHER', 'rot_13')
+
+audio_08 (métadonnées)
+  Type    : Métadonnées ID3
+  Réponse : FIREWALL
+  Méthode : Lisez audio_08_meta.txt pour les tags ID3 simulés
+
+final_beginner.png
+  Type    : Stéganographie LSB
+  Réponse : BLACKHAT
+  Méthode : Lisez les bits de poids faible des pixels rouges
+            Python :
+            from stegano import lsb
+            print(lsb.reveal('final_beginner.png'))
+
+NIVEAU EXPERT
+=============
+
+server_logs.txt
+  Type    : Analyse de logs
+  Réponse : 192.168.42.13
+  Méthode : Cherchez la ligne "INTRUSION DÉTECTÉE"
+
+forensic.png
+  Type    : Métadonnées EXIF avancées
+  Réponse : p4ssw0rd_h1dd3n
+  Méthode : exiftool forensic.png → champ Comment
+            Python : Image.open('forensic.png').info
+
+spectrogram.wav
+  Type    : Spectrogramme audio
+  Réponse : PHANTOM
+  Méthode : Audacity → Vue Spectrogramme
+            Les fréquences dessinent le mot PHANTOM

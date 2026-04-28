@@ -1,0 +1,14 @@
+=== H4CKR — FICHIER CHIFFRÉ ===
+Classification : CONFIDENTIEL
+
+Ce message a été protégé par un chiffrement ROT13.
+Déchiffrez le contenu pour obtenir le mot de passe.
+
+MESSAGE CHIFFRÉ :
+------------------
+FRPHER
+------------------
+
+Indice : ROT13 déplace chaque lettre de 13 positions.
+Outil en ligne : rot13.com
+Python : import codecs; codecs.decode('FRPHER', 'rot_13')

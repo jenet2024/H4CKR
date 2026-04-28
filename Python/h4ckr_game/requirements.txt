@@ -1,0 +1,11 @@
+pygame==2.5.2
+requests==2.31.0
+Pillow==10.3.0
+python-dotenv==1.0.1
+reportlab==4.1.0
+pydub==0.25.1
+cryptography==42.0.5
+pyinstaller==6.6.0
+pyttsx3==2.90
+mutagen==1.47.0
+numpy==1.26.4

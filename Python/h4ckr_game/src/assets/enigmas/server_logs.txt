@@ -1,0 +1,26 @@
+=== LOGS SERVEUR — prod-server-01 ===
+Date : 2024-01-15 | Fuseau : UTC+1
+
+[03:38:00] INFO  — Service SSH démarré (port 22)
+[03:39:12] INFO  — Connexion : user=deploy         | IP: 10.0.0.5      | OK
+[03:40:00] INFO  — Backup automatique lancé
+[03:41:55] INFO  — Connexion : user=monitoring     | IP: 10.0.0.12     | OK
+[03:42:11] WARN  — Tentative échouée : user=admin  | IP: 192.168.42.13 | FAILED
+[03:42:33] WARN  — Tentative échouée : user=root   | IP: 192.168.42.13 | FAILED
+[03:42:45] WARN  — Tentative échouée : user=admin  | IP: 192.168.42.13 | FAILED
+[03:42:58] WARN  — Tentative échouée : user=test   | IP: 192.168.42.13 | FAILED
+[03:43:02] INFO  — Connexion réussie : user=s3cur1ty_t3am | IP: 192.168.42.13 | OK
+[03:43:15] INFO  — Accès fichier : /var/secret/vault.key
+[03:43:28] INFO  — Accès fichier : /etc/shadow
+[03:43:44] INFO  — Accès fichier : /root/.ssh/id_rsa
+[03:44:00] WARN  — Fichier modifié : /etc/passwd
+[03:44:18] WARN  — Fichier modifié : /etc/crontab
+[03:44:30] ERROR — INTRUSION DÉTECTÉE — Source IP: 192.168.42.13
+[03:44:31] ERROR — Exfiltration de données suspectée (3.2 MB envoyés)
+[03:44:45] INFO  — Déconnexion : user=s3cur1ty_t3am
+[03:44:46] WARN  — Alerte sécurité transmise à l'équipe SOC
+[03:45:00] INFO  — Isolation du serveur en cours...
+
+=== FIN DES LOGS ===
+
+Analyste SOC : identifiez l'adresse IP source de l'intrusion.
