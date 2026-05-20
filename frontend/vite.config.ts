@@ -6,10 +6,9 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      // En dev, redirige les appels /auth et /game vers le backend
-      "/auth": { target: "http://localhost:8000", changeOrigin: true },
-      "/game": { target: "http://localhost:8000", changeOrigin: true },
-      "/assets": { target: "http://localhost:8000", changeOrigin: true },
+      "/auth": { target: "http://127.0.0.1:8000", changeOrigin: true },
+      "/game": { target: "http://127.0.0.1:8000", changeOrigin: true },
+      "/assets": { target: "http://127.0.0.1:8000", changeOrigin: true },
     },
   },
 });

@@ -62,6 +62,8 @@ def seed():
                     "Décodez-le et entrez le mot de passe trouvé."
                 ),
                 type="base64",
+                # Guide de décodage Base64 affiché dans le jeu
+                file_path="enigmas/base64_guide.png",
                 hint1="Ce format d'encodage utilise les caractères A-Z, a-z, 0-9, +, /",
                 hint2="Cherchez un outil en ligne 'Base64 decode' ou utilisez Python : base64.b64decode()",
                 hint3="La réponse est : HACKER2025",
@@ -91,15 +93,15 @@ def seed():
                 slug="stegano_image",
                 title="Image Suspecte",
                 description=(
-                    "Un fichier image a été envoyé par un agent suspect.\n"
-                    "Téléchargez le fichier 'suspect.png' et examinez ses métadonnées.\n\n"
-                    "Quel est le commentaire caché dans les métadonnées ?"
+                    "Un agent ennemi nous a transmis cette image avant de disparaître.\n"
+                    "Elle semble anodine... mais un message secret y est dissimulé.\n\n"
+                    "Passez votre souris sur l'image pour révéler l'indice caché."
                 ),
                 type="stegano",
                 file_path="enigmas/suspect.png",
-                hint1="Les images contiennent des données EXIF invisibles à l'œil nu.",
-                hint2="Utilisez un outil comme ExifTool ou consultez les propriétés du fichier.",
-                hint3="Le commentaire caché est : GHOST_PROTOCOL",
+                hint1="L'indice est invisible à l'oeil nu — survolez la zone encadrée au centre de l'image.",
+                hint2="Le message est dissimulé dans la partie centrale de l'image.",
+                hint3="Le mot de passe caché est : GHOST_PROTOCOL",
                 answer_hash=hash_answer("GHOST_PROTOCOL"),
                 points=150,
                 order=3,
@@ -110,14 +112,14 @@ def seed():
                 title="Signal Audio Étrange",
                 description=(
                     "Nos services ont intercepté un fichier audio suspect : 'signal.wav'.\n"
-                    "Écoutez-le attentivement. Un message est caché dans le signal.\n\n"
-                    "Quel mot est prononcé à l'envers dans l'enregistrement ?"
+                    "Écoutez attentivement — vous entendrez 3 syllabes prononcées dans le désordre.\n\n"
+                    "Reconstituez le mot dans le bon ordre et entrez-le en majuscules."
                 ),
                 type="audio",
                 file_path="enigmas/signal.wav",
-                hint1="Importez le fichier dans Audacity (gratuit) et retournez la piste.",
-                hint2="Le message est court — un seul mot prononcé à l'envers.",
-                hint3="Le mot à l'envers est : INFILTRE",
+                hint1="Écoutez bien les 3 syllabes prononcées : elles forment un mot à reconstituer.",
+                hint2="Les syllabes entendues sont dans l'ordre inverse du mot final.",
+                hint3="Le mot reconstitué est : INFILTRE",
                 answer_hash=hash_answer("INFILTRE"),
                 points=150,
                 order=4,

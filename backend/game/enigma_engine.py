@@ -24,16 +24,6 @@ def check_answer(enigma: Enigma, user_answer: str) -> bool:
     normalized = normalize(user_answer)
     return pwd_context.verify(normalized, enigma.answer_hash)
 
-
-def get_hint(enigma: Enigma, hints_used: int) -> str | None:
-    """Retourne l'indice suivant disponible."""
-    hints = [enigma.hint1, enigma.hint2, enigma.hint3]
-    available = [h for h in hints if h]
-    if hints_used < len(available):
-        return available[hints_used]
-    return None
-
-
 def hash_answer(answer: str) -> str:
     """Hash une réponse pour la stocker en base (à utiliser dans le seeder)."""
     return pwd_context.hash(normalize(answer))

@@ -65,6 +65,9 @@ assets_path.mkdir(parents=True, exist_ok=True)
 (assets_path / "certificates").mkdir(exist_ok=True)
 (assets_path / "badges").mkdir(exist_ok=True)
 
+
+print("📁 ASSETS_DIR =", assets_path.resolve())
+
 app.mount("/assets", StaticFiles(directory=str(assets_path)), name="assets")
 
 

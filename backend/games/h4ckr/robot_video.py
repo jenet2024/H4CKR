@@ -10,6 +10,7 @@ from typing import List
 from client.core.settings import Settings
 
 
+
 class RobotVideoScreen:
     """
     Écran d'introduction animé avec robot hacker qui parle.

@@ -17,6 +17,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Vérifie si un token existe au chargement
+    clearTokens(); // <<< FORCE LA DECONNEXION AU DEMARRAGE
     if (getToken()) {
       authApi.me()
         .then(setUser)
@@ -31,12 +32,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const data = await authApi.login(email, password);
     setTokens(data.access_token, data.refresh_token);
     setUser(data.user);
+    sessionStorage.setItem("justLoggedIn", "true");
+
   };
 
   const register = async (pseudo: string, email: string, password: string) => {
     const data = await authApi.register(pseudo, email, password);
     setTokens(data.access_token, data.refresh_token);
     setUser(data.user);
+    sessionStorage.setItem("justLoggedIn", "true");
+
   };
 
   const logout = () => {

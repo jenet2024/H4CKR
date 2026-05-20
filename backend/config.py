@@ -1,3 +1,4 @@
+from pathlib import Path
 from pydantic_settings import BaseSettings
 from functools import lru_cache
 
@@ -30,8 +31,8 @@ class Settings(BaseSettings):
     # Frontend
     FRONTEND_URL: str = "http://localhost:5173"
 
-    # Assets
-    ASSETS_DIR: str = "./assets"
+    # Assets — chemin ABSOLU FIABLE
+    ASSETS_DIR: str = str(Path(__file__).parent / "assets")
 
     class Config:
         env_file = ".env"
