@@ -1062,32 +1062,197 @@ function BadgePopup({ badge, onClose, theme }: { badge: BadgeOut; onClose: () =>
 // LEADERBOARD
 // ═══════════════════════════════════════════════════════════════════
 function Leaderboard({ theme }: { theme: Theme }) {
-  const [entries, setEntries] = useState<LeaderboardEntry[]>([]); const [loading, setLoading] = useState(true);
-  useEffect(() => { gameApi.leaderboard().then(setEntries).finally(() => setLoading(false)); }, []);
+  const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    gameApi.leaderboard()
+      .then(data => {
+        // ⭐ TRI DU PLUS GRAND AU PLUS PETIT
+        data.sort((a, b) => b.total_points - a.total_points);
+        setEntries(data);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
   const isDark = theme === "dark";
-  if (loading) return <div style={{ textAlign: "center", padding: 60, color: "var(--green-dim)", fontFamily: "var(--font-mono)" }}><div style={{ fontSize: 28, marginBottom: 12, animation: "pulse 1.5s ease infinite" }}>⚡</div>Chargement...</div>;
+
+  if (loading)
+    return (
+      <div
+        style={{
+          textAlign: "center",
+          padding: 60,
+          color: "var(--green-dim)",
+          fontFamily: "var(--font-mono)",
+        }}
+      >
+        <div
+          style={{
+            fontSize: 28,
+            marginBottom: 12,
+            animation: "pulse 1.5s ease infinite",
+          }}
+        >
+          ⚡
+        </div>
+        Chargement...
+      </div>
+    );
+
   return (
     <div style={{ animation: "fadeUp .3s ease" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}><span style={{ fontSize: 28 }}>🏆</span><h2 style={{ fontFamily: "var(--font-hud)", fontSize: 20, color: "var(--green)" }}>CLASSEMENT MONDIAL</h2></div>
-      <div style={{ display: "grid", gridTemplateColumns: "50px 1fr 120px 80px 100px", gap: 8, padding: "8px 14px", color: "var(--text-dim)", fontFamily: "var(--font-hud)", fontSize: 9, letterSpacing: 2, borderBottom: "1px solid var(--border)", marginBottom: 8 }}><span>#</span><span>AGENT</span><span>NIVEAU</span><span>BADGES</span><span style={{ textAlign: "right" }}>SCORE</span></div>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          marginBottom: 24,
+        }}
+      >
+        <span style={{ fontSize: 28 }}>🏆</span>
+        <h2
+          style={{
+            fontFamily: "var(--font-hud)",
+            fontSize: 20,
+            color: "var(--green)",
+          }}
+        >
+          CLASSEMENT MONDIAL
+        </h2>
+      </div>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "50px 1fr 120px 80px 100px",
+          gap: 8,
+          padding: "8px 14px",
+          color: "var(--text-dim)",
+          fontFamily: "var(--font-hud)",
+          fontSize: 9,
+          letterSpacing: 2,
+          borderBottom: "1px solid var(--border)",
+          marginBottom: 8,
+        }}
+      >
+        <span>#</span>
+        <span>AGENT</span>
+        <span>NIVEAU</span>
+        <span>BADGES</span>
+        <span style={{ textAlign: "right" }}>SCORE</span>
+      </div>
+
       {entries.map((e, i) => (
-        <div key={e.user_id} style={{ display: "grid", gridTemplateColumns: "50px 1fr 120px 80px 100px", gap: 8, padding: "13px 14px", marginBottom: 4, background: i < 3 ? `rgba(0,${isDark ? 255 : 150},65,${0.07 - i * 0.02})` : isDark ? "rgba(0,4,0,0.5)" : "rgba(240,248,240,0.7)", border: "1px solid var(--border)", borderRadius: 5, alignItems: "center", animation: `fadeUp .3s ease ${i * .04}s both`, transition: "transform .2s" }}
-          onMouseEnter={ev => { ev.currentTarget.style.transform = "translateX(5px)"; }}
-          onMouseLeave={ev => { ev.currentTarget.style.transform = ""; }}>
-          <span style={{ fontFamily: "var(--font-hud)", fontSize: 15, color: i === 0 ? "#b07700" : i === 1 ? "#808080" : i === 2 ? "#7f5020" : "var(--text-dim)" }}>{i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : e.rank}</span>
+        <div
+          key={e.user_id}
+          style={{
+            display: "grid",
+            gridTemplateColumns: "50px 1fr 120px 80px 100px",
+            gap: 8,
+            padding: "13px 14px",
+            marginBottom: 4,
+            background:
+              i < 3
+                ? `rgba(0,${isDark ? 255 : 150},65,${0.07 - i * 0.02})`
+                : isDark
+                ? "rgba(0,4,0,0.5)"
+                : "rgba(240,248,240,0.7)",
+            border: "1px solid var(--border)",
+            borderRadius: 5,
+            alignItems: "center",
+            animation: `fadeUp .3s ease ${i * 0.04}s both`,
+            transition: "transform .2s",
+          }}
+          onMouseEnter={(ev) => {
+            ev.currentTarget.style.transform = "translateX(5px)";
+          }}
+          onMouseLeave={(ev) => {
+            ev.currentTarget.style.transform = "";
+          }}
+        >
+          <span
+            style={{
+              fontFamily: "var(--font-hud)",
+              fontSize: 15,
+              color:
+                i === 0
+                  ? "#b07700"
+                  : i === 1
+                  ? "#808080"
+                  : i === 2
+                  ? "#7f5020"
+                  : "var(--text-dim)",
+            }}
+          >
+            {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : e.rank}
+          </span>
+
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 30, height: 30, borderRadius: "50%", background: "var(--green-faint)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: "var(--green)" }}>{e.pseudo[0]?.toUpperCase()}</div>
-            <span style={{ color: "var(--text)", fontSize: 14, fontWeight: 600 }}>{e.pseudo}</span>
+            <div
+              style={{
+                width: 30,
+                height: 30,
+                borderRadius: "50%",
+                background: "var(--green-faint)",
+                border: "1px solid var(--border)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 13,
+                color: "var(--green)",
+              }}
+            >
+              {e.pseudo[0]?.toUpperCase()}
+            </div>
+            <span
+              style={{
+                color: "var(--text)",
+                fontSize: 14,
+                fontWeight: 600,
+              }}
+            >
+              {e.pseudo}
+            </span>
           </div>
-          <span style={{ color: "var(--text-dim)", fontSize: 12 }}>{e.level_reached}</span>
-          <span style={{ color: "var(--text-dim)", fontSize: 12 }}>🏅 {e.badges_count}</span>
-          <span style={{ fontFamily: "var(--font-hud)", fontSize: 15, color: "var(--green)", textAlign: "right" }}>{e.total_points.toLocaleString()}</span>
+
+          <span style={{ color: "var(--text-dim)", fontSize: 12 }}>
+            {e.level_reached}
+          </span>
+
+          <span style={{ color: "var(--text-dim)", fontSize: 12 }}>
+            🏅 {e.badges_count}
+          </span>
+
+          <span
+            style={{
+              fontFamily: "var(--font-hud)",
+              fontSize: 15,
+              color: "var(--green)",
+              textAlign: "right",
+            }}
+          >
+            {e.total_points.toLocaleString()}
+          </span>
         </div>
       ))}
-      {entries.length === 0 && <div style={{ textAlign: "center", padding: 40, color: "var(--text-dim)", fontFamily: "var(--font-mono)" }}>Aucun agent classé pour le moment...</div>}
+
+      {entries.length === 0 && (
+        <div
+          style={{
+            textAlign: "center",
+            padding: 40,
+            color: "var(--text-dim)",
+            fontFamily: "var(--font-mono)",
+          }}
+        >
+          Aucun agent classé pour le moment...
+        </div>
+      )}
     </div>
   );
 }
+
 
 // ═══════════════════════════════════════════════════════════════════
 // BADGES
