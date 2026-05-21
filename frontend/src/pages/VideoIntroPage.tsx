@@ -5,7 +5,7 @@ export default function VideoIntroPage() {
   const navigate = useNavigate();
 
   const onVideoEnd = () => {
-    navigate("/game"); // redirection vers GamePage
+    navigate("/intro"); // retour à la page d’intro
   };
 
   return (
@@ -20,7 +20,7 @@ export default function VideoIntroPage() {
       }}
     >
       <video
-        src="/video/intro.mp4"   // <<< mets ta vidéo ici
+        src="/video/intro.mp4"
         autoPlay
         controls={false}
         onEnded={onVideoEnd}
