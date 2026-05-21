@@ -967,6 +967,21 @@ function LevelView({
     }
   };
 
+
+  const viewCert = async () => {
+  try {
+    const cert = await gameApi.generateCertificate(level.slug);
+    window.open(
+      `http://localhost:8000/game/certificate/download/${cert.unique_code}`,
+      "_blank"
+    );
+  } catch (e: any) {
+    alert(e?.detail ?? "Impossible d’ouvrir le certificat");
+  }
+};
+
+
+
   return (
     <div style={{ animation: "levelIn .5s ease" }}>
       <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
@@ -1127,7 +1142,29 @@ function LevelView({
               >
                 {genCert ? "Génération..." : "⬇ Télécharger Certificat"}
               </button>
+
+
+              <div style={{ display: "flex", gap: 10 }}>
+  {/* <button
+    className="hud-btn primary"
+    onClick={downloadCert}
+    disabled={genCert}
+    style={{ fontSize: 10 }}
+  >
+    {genCert ? "Génération..." : "⬇ Télécharger"}
+  </button> */}
+
+  <button
+    className="hud-btn secondary"
+    onClick={viewCert}
+    style={{ fontSize: 10 }}
+  >
+    👁 Voir
+  </button>
+</div>
+
             </div>
+            
           )}
 
           {/* Robot guide */}

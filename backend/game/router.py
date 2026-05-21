@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from datetime import datetime
@@ -21,77 +21,66 @@ from game.badge_engine import check_and_award_badges
 from game.certificate import generate_certificate
 from config import get_settings
 
-from game.enigma_engine import check_answer, get_hint, process_terminal_command
-
-
 settings = get_settings()
 router = APIRouter(prefix="/game", tags=["Game"])
 
 
-# ── Levels ────────────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────────────────────────
+# LEVELS
+# ───────────────────────────────────────────────────────────────────────────────
 
 @router.get("/levels", response_model=list[LevelOut])
-def get_levels(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    """Retourne tous les niveaux avec les énigmes et la progression du joueur."""
+def get_levels(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     levels = db.query(Level).filter(Level.is_active == True).order_by(Level.order).all()
-
     result = []
+
     for level in levels:
         level_out = LevelOut.model_validate(level)
+        enriched = []
 
-        # Enrichit chaque énigme avec la progression du joueur
-        enriched_enigmas = []
         for enigma in level.enigmas:
             if not enigma.is_active:
                 continue
+
             progress = db.query(UserProgress).filter(
                 UserProgress.user_id == current_user.id,
                 UserProgress.enigma_id == str(enigma.id),
             ).first()
 
-            e_out = EnigmaOut.model_validate(enigma)
-            e_out.solved = bool(progress and progress.solved)
-            e_out.hints_used = progress.hints_used if progress else 0
-            enriched_enigmas.append(e_out)
+            e = EnigmaOut.model_validate(enigma)
+            e.solved = bool(progress and progress.solved)
+            e.hints_used = progress.hints_used if progress else 0
+            enriched.append(e)
 
-        level_out.enigmas = enriched_enigmas
+        level_out.enigmas = enriched
         result.append(level_out)
 
     return result
 
 
 @router.get("/levels/{level_slug}", response_model=LevelOut)
-def get_level(
-    level_slug: str,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
+def get_level(level_slug: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     level = db.query(Level).filter(Level.slug == level_slug, Level.is_active == True).first()
     if not level:
         raise HTTPException(404, "Niveau introuvable")
     return level
 
 
-# ── Answer submission ─────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────────────────────────
+# ANSWERS
+# ───────────────────────────────────────────────────────────────────────────────
 
 @router.post("/answer", response_model=AnswerResponse)
-def submit_answer(
-    body: AnswerRequest,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
+def submit_answer(body: AnswerRequest, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     enigma = db.query(Enigma).filter(Enigma.id == body.enigma_id, Enigma.is_active == True).first()
     if not enigma:
         raise HTTPException(404, "Énigme introuvable")
 
-    # Récupère ou crée le progrès
     progress = db.query(UserProgress).filter(
         UserProgress.user_id == current_user.id,
         UserProgress.enigma_id == str(enigma.id),
     ).first()
+
     if not progress:
         progress = UserProgress(
             user_id=current_user.id,
@@ -107,11 +96,11 @@ def submit_answer(
     progress.hints_used = progress.hints_used or 0
     progress.solved = getattr(progress, "solved", 0)
 
-    # Incrémente les tentatives
     score_record = db.query(Score).filter(
         Score.user_id == current_user.id,
         Score.level_id == enigma.level_id,
     ).first()
+
     if not score_record:
         score_record = Score(user_id=current_user.id, level_id=enigma.level_id, points=0)
         db.add(score_record)
@@ -119,21 +108,18 @@ def submit_answer(
 
     score_record.attempts = (score_record.attempts or 0) + 1
 
-    # Vérifie la réponse
     is_correct = check_answer(enigma, body.answer)
 
     if is_correct:
         progress.solved = 1
         progress.solved_at = datetime.utcnow()
 
-        # Calcul des points (pénalité selon indices utilisés)
         hint_penalty = progress.hints_used * 10
         points = max(enigma.points - hint_penalty, enigma.points // 2)
         score_record.points = (score_record.points or 0) + points
 
         db.commit()
 
-        # Badges
         new_badges = check_and_award_badges(
             user=current_user,
             enigma_type=enigma.type,
@@ -142,9 +128,7 @@ def submit_answer(
             db=db,
         )
 
-        badge_out = None
-        if new_badges:
-            badge_out = BadgeOut.model_validate(new_badges[0])
+        badge_out = BadgeOut.model_validate(new_badges[0]) if new_badges else None
 
         return AnswerResponse(
             correct=True,
@@ -152,13 +136,10 @@ def submit_answer(
             points_earned=points,
             badge_earned=badge_out,
         )
+
     else:
         db.commit()
-
-        # Propose un indice après 3 tentatives
-        hint = None
-        if score_record.attempts >= 3:
-            hint = get_hint(enigma, progress.hints_used)
+        hint = get_hint(enigma, progress.hints_used) if score_record.attempts >= 3 else None
 
         return AnswerResponse(
             correct=False,
@@ -168,14 +149,12 @@ def submit_answer(
         )
 
 
-# ── Hint ──────────────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────────────────────────
+# HINTS
+# ───────────────────────────────────────────────────────────────────────────────
 
 @router.post("/hint/{enigma_id}")
-def request_hint(
-    enigma_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
+def request_hint(enigma_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     enigma = db.query(Enigma).filter(Enigma.id == enigma_id).first()
     if not enigma:
         raise HTTPException(404, "Énigme introuvable")
@@ -184,6 +163,7 @@ def request_hint(
         UserProgress.user_id == current_user.id,
         UserProgress.enigma_id == str(enigma_id),
     ).first()
+
     if not progress:
         progress = UserProgress(
             user_id=current_user.id,
@@ -200,11 +180,11 @@ def request_hint(
 
     progress.hints_used = (progress.hints_used or 0) + 1
 
-    # Pénalité de points
     score_record = db.query(Score).filter(
         Score.user_id == current_user.id,
         Score.level_id == enigma.level_id,
     ).first()
+
     if score_record:
         score_record.points = max((score_record.points or 0) - 10, 0)
 
@@ -212,15 +192,12 @@ def request_hint(
     return {"hint": hint, "message": f"Indice {progress.hints_used}/3 (-10 pts)"}
 
 
-# ── Terminal (niveau expert) ──────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────────────────────────
+# TERMINAL (EXPERT)
+# ───────────────────────────────────────────────────────────────────────────────
 
 @router.post("/terminal", response_model=TerminalResponse)
-def terminal_command(
-    body: TerminalCommand,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    """Traite une commande du terminal interactif (niveau expert)."""
+def terminal_command(body: TerminalCommand, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     output, success, points = process_terminal_command(body.command)
 
     if points > 0:
@@ -230,23 +207,23 @@ def terminal_command(
                 Score.user_id == current_user.id,
                 Score.level_id == expert_level.id,
             ).first()
+
             if not score_record:
                 score_record = Score(user_id=current_user.id, level_id=expert_level.id, points=0)
                 db.add(score_record)
+
             score_record.points = (score_record.points or 0) + points
             db.commit()
 
     return TerminalResponse(output=output, success=success, points_earned=points)
 
 
-# ── Leaderboard ───────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────────────────────────
+# LEADERBOARD
+# ───────────────────────────────────────────────────────────────────────────────
 
 @router.get("/leaderboard", response_model=list[LeaderboardEntry])
-def leaderboard(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    """Classement général par total de points."""
+def leaderboard(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     results = (
         db.query(
             User.id,
@@ -265,11 +242,11 @@ def leaderboard(
     for rank, row in enumerate(results, start=1):
         badges_count = db.query(UserBadge).filter(UserBadge.user_id == row.id).count()
 
-        # Niveau atteint
         levels_completed = db.query(UserProgress).filter(
             UserProgress.user_id == row.id,
             UserProgress.solved == 1,
         ).count()
+
         if levels_completed == 0:
             level_reached = "Aucun"
         elif levels_completed < 5:
@@ -290,7 +267,9 @@ def leaderboard(
     return entries
 
 
-# ── Badges ────────────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────────────────────────
+# BADGES
+# ───────────────────────────────────────────────────────────────────────────────
 
 @router.get("/badges", response_model=list[BadgeOut])
 def all_badges(db: Session = Depends(get_db), _: User = Depends(get_current_user)):
@@ -298,10 +277,7 @@ def all_badges(db: Session = Depends(get_db), _: User = Depends(get_current_user
 
 
 @router.get("/my-badges", response_model=list[BadgeOut])
-def my_badges(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
+def my_badges(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     user_badges = (
         db.query(Badge)
         .join(UserBadge, UserBadge.badge_id == Badge.id)
@@ -311,23 +287,20 @@ def my_badges(
     return user_badges
 
 
-# ── Certificate ───────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────────────────────────
+# CERTIFICATES
+# ───────────────────────────────────────────────────────────────────────────────
 
 @router.post("/certificate/{level_slug}", response_model=CertificateOut)
-def generate_cert(
-    level_slug: str,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    """Génère le certificat PDF si le niveau est complété."""
+def generate_cert(level_slug: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     level = db.query(Level).filter(Level.slug == level_slug).first()
     if not level:
         raise HTTPException(404, "Niveau introuvable")
 
-    # Vérifie que toutes les énigmes sont résolues
     total_enigmas = db.query(Enigma).filter(
         Enigma.level_id == level.id, Enigma.is_active == True
     ).count()
+
     solved_enigmas = db.query(UserProgress).filter(
         UserProgress.user_id == current_user.id,
         UserProgress.level_id == level.id,
@@ -340,22 +313,21 @@ def generate_cert(
             f"Niveau non complété : {solved_enigmas}/{total_enigmas} énigmes résolues"
         )
 
-    # Score total
     score_record = db.query(Score).filter(
         Score.user_id == current_user.id,
         Score.level_id == level.id,
     ).first()
+
     total_score = score_record.points if score_record else 0
 
-    # Certificat existant ?
     existing = db.query(Certificate).filter(
         Certificate.user_id == current_user.id,
         Certificate.level == level_slug,
     ).first()
+
     if existing:
         return CertificateOut.model_validate(existing)
 
-    # Génère le PDF
     pdf_path, unique_code = generate_certificate(
         pseudo=current_user.pseudo,
         level=level_slug,
@@ -370,9 +342,9 @@ def generate_cert(
         pdf_path=pdf_path,
         unique_code=unique_code,
     )
+
     db.add(cert)
 
-    # Badge Black Hat si niveau expert
     if level_slug == "expert":
         from game.badge_engine import award_badge
         award_badge(current_user, "black_hat", db)
@@ -382,12 +354,9 @@ def generate_cert(
     return CertificateOut.model_validate(cert)
 
 
+# DOWNLOAD (force le téléchargement)
 @router.get("/certificate/download/{unique_code}")
-def download_certificate(
-    unique_code: str,
-    db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
-):
+def download_certificate(unique_code: str, db: Session = Depends(get_db)):
     cert = db.query(Certificate).filter(Certificate.unique_code == unique_code).first()
     if not cert or not cert.pdf_path:
         raise HTTPException(404, "Certificat introuvable")
@@ -403,17 +372,29 @@ def download_certificate(
     )
 
 
-# ── Contact ───────────────────────────────────────────────────────────────────
+# VIEW (ouvre dans le navigateur)
+@router.get("/certificate/view/{unique_code}")
+def view_certificate(unique_code: str, db: Session = Depends(get_db)):
+    cert = db.query(Certificate).filter(Certificate.unique_code == unique_code).first()
+    if not cert or not cert.pdf_path:
+        raise HTTPException(404, "Certificat introuvable")
+
+    path = Path(cert.pdf_path)
+    if not path.exists():
+        raise HTTPException(404, "Fichier PDF introuvable")
+
+    return StreamingResponse(
+        open(path, "rb"),
+        media_type="application/pdf"
+    )
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# CONTACT
+# ───────────────────────────────────────────────────────────────────────────────
 
 @router.post("/contact", status_code=201)
-def contact(
-    body: ContactRequest,
-    current_user: User = Depends(get_current_user),
-):
-    """
-    Enregistre un message de contact.
-    En production : envoyer un email via SMTP ou stocker en base.
-    """
+def contact(body: ContactRequest, current_user: User = Depends(get_current_user)):
     print(
         f"\n[CONTACT] De: {current_user.pseudo} ({current_user.email})\n"
         f"  Catégorie: {body.category}\n"
@@ -426,11 +407,12 @@ def contact(
     }
 
 
-# ── Assets ────────────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────────────────────────
+# ASSETS
+# ───────────────────────────────────────────────────────────────────────────────
 
 @router.get("/video/{filename}")
 def get_video(filename: str, _: User = Depends(get_current_user)):
-    """Sert les vidéos d'intro des niveaux."""
     path = Path(settings.ASSETS_DIR) / "videos" / filename
     if not path.exists():
         raise HTTPException(404, "Vidéo introuvable")
@@ -439,7 +421,6 @@ def get_video(filename: str, _: User = Depends(get_current_user)):
 
 @router.get("/enigma-file/{filename}")
 def get_enigma_file(filename: str, _: User = Depends(get_current_user)):
-    """Sert les fichiers d'énigmes (images, audio…)."""
     path = Path(settings.ASSETS_DIR) / "enigmas" / filename
     if not path.exists():
         raise HTTPException(404, "Fichier introuvable")
