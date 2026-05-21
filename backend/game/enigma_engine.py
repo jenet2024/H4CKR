@@ -28,6 +28,22 @@ def hash_answer(answer: str) -> str:
     """Hash une réponse pour la stocker en base (à utiliser dans le seeder)."""
     return pwd_context.hash(normalize(answer))
 
+def get_hint(enigma, attempt):
+    """
+    Retourne un indice en fonction du nombre d'essais.
+    attempt = nombre de tentatives déjà effectuées.
+    """
+    hints = enigma.get("hints", [])
+
+    if not hints:
+        return "Aucun indice disponible pour cette énigme."
+
+    # Si attempt dépasse le nombre d'indices, on renvoie le dernier
+    if attempt >= len(hints):
+        return hints[-1]
+
+    return hints[attempt]
+
 
 # ── Helpers pour le terminal (niveau expert) ──────────────────────────────────
 

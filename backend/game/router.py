@@ -21,6 +21,9 @@ from game.badge_engine import check_and_award_badges
 from game.certificate import generate_certificate
 from config import get_settings
 
+from game.enigma_engine import check_answer, get_hint, process_terminal_command
+
+
 settings = get_settings()
 router = APIRouter(prefix="/game", tags=["Game"])
 
