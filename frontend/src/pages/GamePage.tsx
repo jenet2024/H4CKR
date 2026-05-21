@@ -5,11 +5,17 @@ import robotPhantom from "../assets/robot_phantom.png";
 import CyberpunkRobotImage from "../components/CyberpunkRobotImage";
 
 
-
+// ⭐ Mapping Badge → Enigme
 const BADGE_TO_ENIGMA: Record<string, string> = {
   first_blood: "base64_message",
   decoder: "caesar_cipher",
+  stega_master: "stegano_image",
+  audio_detective: "audio_message",
+  log_analyst: "log_analysis",
 };
+
+
+
 
 // ═══════════════════════════════════════════════════════════════════
 // THEME SYSTEM
@@ -884,110 +890,375 @@ const ROBOT_INTROS: Record<string, string> = {
 const LEVEL_COLORS_DARK  = ["#00ff41", "#00e5ff", "#ff9900", "#cc44ff", "#ff003c"];
 const LEVEL_COLORS_LIGHT = ["#009922", "#0077cc", "#996600", "#7711cc", "#cc0022"];
 
-function LevelView({ level, levelIndex, onBadge, theme }: { level: LevelOut; levelIndex: number; onBadge: (b: BadgeOut) => void; theme: Theme }) {
+function LevelView({
+  level,
+  levelIndex,
+  onBadge,
+  theme,
+}: {
+  level: LevelOut;
+  levelIndex: number;
+  onBadge: (b: BadgeOut) => void;
+  theme: Theme;
+}) {
   const [robotDone, setRobotDone] = useState(false);
-  const [enigmas, setEnigmas] = useState<EnigmaOut[]>([...level.enigmas].sort((a, b) => a.order - b.order));
+  const [enigmas, setEnigmas] = useState<EnigmaOut[]>(
+    [...level.enigmas].sort((a, b) => a.order - b.order)
+  );
 
+  // ⭐ Chargement de la progression
   useEffect(() => {
-  async function loadProgress() {
-    try {
-      const badges = await gameApi.myBadges();
-      const solvedBadges = new Set(badges.map(b => b.slug));
+    async function loadProgress() {
+      try {
+        const badges = await gameApi.myBadges();
+        const solvedBadges = new Set(badges.map((b) => b.slug));
 
-      setEnigmas(prev =>
-        prev.map(e => {
-          const solved =
-            solvedBadges.has(e.slug) ||
-            [...solvedBadges].some(b => BADGE_TO_ENIGMA[b] === e.slug);
+        setEnigmas((prev) =>
+          prev.map((e) => {
+            const solved =
+              solvedBadges.has(e.slug) ||
+              [...solvedBadges].some((b) => BADGE_TO_ENIGMA[b] === e.slug);
 
-          return { ...e, solved };
-        })
-      );
-    } catch (err) {
-      console.error("Impossible de charger la progression", err);
+            return { ...e, solved };
+          })
+        );
+      } catch (err) {
+        console.error("Impossible de charger la progression", err);
+      }
     }
-  }
 
-  loadProgress();
-}, []);
-
-
+    loadProgress();
+  }, []);
 
   const [genCert, setGenCert] = useState(false);
   const isDark = theme === "dark";
-  const accent = (isDark ? LEVEL_COLORS_DARK : LEVEL_COLORS_LIGHT)[levelIndex % 5];
-  const solved = enigmas.filter(e => e.solved).length;
+
+  const LEVEL_COLORS_LIGHT = ["#00c853", "#0091ea", "#ff6d00", "#aa00ff", "#d50000"];
+  const LEVEL_COLORS_DARK = ["#00ff6a", "#33b5ff", "#ff9100", "#d066ff", "#ff4444"];
+
+  const accent = (isDark ? LEVEL_COLORS_DARK : LEVEL_COLORS_LIGHT)[
+    levelIndex % 5
+  ];
+
+  const solved = enigmas.filter((e) => e.solved).length;
   const total = enigmas.length;
   const complete = solved === total && total > 0;
   const pct = total > 0 ? (solved / total) * 100 : 0;
 
   const handleSolve = (i: number) => (badge?: BadgeOut) => {
-    setEnigmas(prev => prev.map((e, j) => j === i ? { ...e, solved: true } : e));
+    setEnigmas((prev) =>
+      prev.map((e, j) => (j === i ? { ...e, solved: true } : e))
+    );
     if (badge) onBadge(badge);
   };
 
   const downloadCert = async () => {
     setGenCert(true);
-    try { const cert = await gameApi.generateCertificate(level.slug); window.open(gameApi.downloadCertificate(cert.unique_code), "_blank"); }
-    catch (e: any) { alert(e?.detail ?? "Impossible de générer le certificat"); }
-    finally { setGenCert(false); }
+    try {
+      const cert = await gameApi.generateCertificate(level.slug);
+      window.open(
+        gameApi.downloadCertificate(cert.unique_code),
+        "_blank"
+      );
+    } catch (e: any) {
+      alert(e?.detail ?? "Impossible de générer le certificat");
+    } finally {
+      setGenCert(false);
+    }
   };
 
   return (
     <div style={{ animation: "levelIn .5s ease" }}>
       <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
+        {/* COLONNE GAUCHE */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 18, padding: "16px 20px", background: isDark ? "rgba(0,6,0,0.9)" : "rgba(240,250,240,0.95)", border: `1px solid ${accent}35`, borderRadius: 8, position: "relative", overflow: "hidden" }}>
-            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,transparent,${accent}70,transparent)` }} />
-            <div style={{ width: 46, height: 46, borderRadius: "50%", border: `2px solid ${accent}65`, display: "flex", alignItems: "center", justifyContent: "center", background: `${accent}12`, fontFamily: "var(--font-hud)", fontSize: 18, color: accent, animation: "glow 2s ease-in-out infinite", flexShrink: 0 }}>{level.order}</div>
+          {/* En-tête du niveau */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 14,
+              marginBottom: 18,
+              padding: "16px 20px",
+              background: isDark
+                ? "rgba(0,6,0,0.9)"
+                : "rgba(240,250,240,0.95)",
+              border: `1px solid ${accent}35`,
+              borderRadius: 8,
+              position: "relative",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 2,
+                background: `linear-gradient(90deg,transparent,${accent}70,transparent)`,
+              }}
+            />
+            <div
+              style={{
+                width: 46,
+                height: 46,
+                borderRadius: "50%",
+                border: `2px solid ${accent}65`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: `${accent}12`,
+                fontFamily: "var(--font-hud)",
+                fontSize: 18,
+                color: accent,
+                animation: "glow 2s ease-in-out infinite",
+                flexShrink: 0,
+              }}
+            >
+              {level.order}
+            </div>
+
             <div style={{ flex: 1 }}>
-              <div style={{ fontFamily: "var(--font-hud)", fontSize: 17, color: "var(--text)", fontWeight: 700, marginBottom: 3 }}>{level.name}</div>
-              <div style={{ color: "var(--text-dim)", fontSize: 13, lineHeight: 1.5 }}>{level.description}</div>
-            </div>
-            <div style={{ textAlign: "right", flexShrink: 0 }}>
-              <div style={{ fontFamily: "var(--font-hud)", fontSize: 15, color: complete ? "var(--green)" : accent, marginBottom: 2 }}>{solved}/{total}{complete ? " ✓" : ""}</div>
-              <div style={{ color: "var(--text-dim)", fontSize: 11 }}>{level.max_points} pts max</div>
-            </div>
-          </div>
-          <div style={{ height: 5, background: isDark ? "rgba(0,255,65,0.06)" : "rgba(0,100,30,0.1)", borderRadius: 3, marginBottom: 18, overflow: "hidden" }}>
-            <div style={{ height: "100%", width: `${pct}%`, background: `linear-gradient(90deg,${accent},${accent}99)`, transition: "width 1.2s ease", borderRadius: 3 }} />
-          </div>
-          {complete && (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 22px", marginBottom: 18, background: "var(--green-faint)", border: "1px solid var(--green-dim)", borderRadius: 6, animation: "glow 2.5s ease-in-out infinite" }}>
-              <div>
-                <div style={{ color: "var(--green)", fontFamily: "var(--font-hud)", fontSize: 13 }}>🏆 NIVEAU COMPLÉTÉ !</div>
-                <div style={{ color: "var(--text-dim)", fontSize: 11, marginTop: 2 }}>Générez votre certificat officiel H4CKR</div>
+              <div
+                style={{
+                  fontFamily: "var(--font-hud)",
+                  fontSize: 17,
+                  color: "var(--text)",
+                  fontWeight: 700,
+                  marginBottom: 3,
+                }}
+              >
+                {level.name}
               </div>
-              <button className="hud-btn primary" onClick={downloadCert} disabled={genCert} style={{ fontSize: 10 }}>{genCert ? "Génération..." : "⬇ Télécharger Certificat"}</button>
+              <div
+                style={{
+                  color: "var(--text-dim)",
+                  fontSize: 13,
+                  lineHeight: 1.5,
+                }}
+              >
+                {level.description}
+              </div>
+            </div>
+
+            <div style={{ textAlign: "right", flexShrink: 0 }}>
+              <div
+                style={{
+                  fontFamily: "var(--font-hud)",
+                  fontSize: 15,
+                  color: complete ? "var(--green)" : accent,
+                  marginBottom: 2,
+                }}
+              >
+                {solved}/{total}
+                {complete ? " ✓" : ""}
+              </div>
+              <div style={{ color: "var(--text-dim)", fontSize: 11 }}>
+                {level.max_points} pts max
+              </div>
+            </div>
+          </div>
+
+          {/* Barre de progression */}
+          <div
+            style={{
+              height: 5,
+              background: isDark
+                ? "rgba(0,255,65,0.06)"
+                : "rgba(0,100,30,0.1)",
+              borderRadius: 3,
+              marginBottom: 18,
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                height: "100%",
+                width: `${pct}%`,
+                background: `linear-gradient(90deg,${accent},${accent}99)`,
+                transition: "width 1.2s ease",
+                borderRadius: 3,
+              }}
+            />
+          </div>
+
+          {/* Certificat */}
+          {complete && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "14px 22px",
+                marginBottom: 18,
+                background: "var(--green-faint)",
+                border: "1px solid var(--green-dim)",
+                borderRadius: 6,
+                animation: "glow 2.5s ease-in-out infinite",
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    color: "var(--green)",
+                    fontFamily: "var(--font-hud)",
+                    fontSize: 13,
+                  }}
+                >
+                  🏆 NIVEAU COMPLÉTÉ !
+                </div>
+                <div
+                  style={{
+                    color: "var(--text-dim)",
+                    fontSize: 11,
+                    marginTop: 2,
+                  }}
+                >
+                  Générez votre certificat officiel H4CKR
+                </div>
+              </div>
+
+              <button
+                className="hud-btn primary"
+                onClick={downloadCert}
+                disabled={genCert}
+                style={{ fontSize: 10 }}
+              >
+                {genCert ? "Génération..." : "⬇ Télécharger Certificat"}
+              </button>
             </div>
           )}
+
+          {/* Robot guide */}
           {!robotDone && (
-            <div style={{ marginBottom: 18, background: isDark ? "rgba(0,6,0,0.9)" : "rgba(240,250,240,0.95)", border: `1px solid ${accent}25`, borderRadius: 8, overflow: "hidden" }}>
-              <RobotGuide text={ROBOT_INTROS[level.slug] ?? ROBOT_INTROS.default} accent={accent} onDone={() => setRobotDone(true)} theme={theme} />
+            <div
+              style={{
+                marginBottom: 18,
+                background: isDark
+                  ? "rgba(0,6,0,0.9)"
+                  : "rgba(240,250,240,0.95)",
+                border: `1px solid ${accent}25`,
+                borderRadius: 8,
+                overflow: "hidden",
+              }}
+            >
+              <RobotGuide
+                text={ROBOT_INTROS[level.slug] ?? ROBOT_INTROS.default}
+                accent={accent}
+                onDone={() => setRobotDone(true)}
+                theme={theme}
+              />
             </div>
           )}
-          {enigmas.map((e, i) => <EnigmaCard key={e.id} enigma={e} index={i} isLocked={i > 0 && !enigmas[i - 1].solved} onSolve={handleSolve(i)} theme={theme} />)}
+
+          {/* Énigmes */}
+          {enigmas.map((e, i) => (
+            <EnigmaCard
+              key={e.id}
+              enigma={e}
+              index={i}
+              isLocked={i > 0 && !enigmas[i - 1].solved}
+              onSolve={handleSolve(i)}
+              theme={theme}
+            />
+          ))}
         </div>
 
-        {/* Robot colonne droite */}
-        <div style={{ width: 225, flexShrink: 0, position: "sticky", top: 76, display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
-          <div style={{ padding: "18px 8px", background: isDark ? "rgba(0,6,0,0.7)" : "rgba(240,250,240,0.9)", border: `1px solid ${accent}22`, borderRadius: 12, width: "100%", display: "flex", justifyContent: "center", position: "relative", overflow: "hidden" }}>
-            <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse at center bottom,${accent}07 0%,transparent 70%)` }} />
-            {/* <CyberpunkRobot idx={levelIndex} animate theme={theme} /> */}
-            
+        {/* COLONNE DROITE — ROBOT */}
+        <div
+          style={{
+            width: 225,
+            flexShrink: 0,
+            position: "sticky",
+            top: 76,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 14,
+          }}
+        >
+          <div
+            style={{
+              padding: "18px 8px",
+              background: isDark
+                ? "rgba(0,6,0,0.7)"
+                : "rgba(240,250,240,0.9)",
+              border: `1px solid ${accent}22`,
+              borderRadius: 12,
+              width: "100%",
+              display: "flex",
+              justifyContent: "center",
+              position: "relative",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background: `radial-gradient(ellipse at center bottom,${accent}07 0%,transparent 70%)`,
+              }}
+            />
+
             <CyberpunkRobotImage
-        src={robotPhantom}
-        theme={theme}
-        size={260}
-        animate={true}
-      />
+              src={robotPhantom}
+              theme={theme}
+              size={260}
+              animate={true}
+            />
           </div>
-          <div style={{ width: "100%", background: isDark ? "rgba(0,4,0,0.8)" : "rgba(240,250,240,0.9)", border: "1px solid var(--border)", borderRadius: 8, padding: "12px 14px" }}>
-            <div style={{ color: "var(--green-dim)", fontFamily: "var(--font-hud)", fontSize: 8, letterSpacing: 3, marginBottom: 7, opacity: 0.7 }}>● AGENT DE MISSION</div>
-            <div style={{ color: "var(--text-dim)", fontSize: 11, fontFamily: "var(--font-mono)", lineHeight: 1.9 }}>
-              <div>STATUS: <span style={{ color: complete ? "var(--green)" : accent }}>{complete ? "MISSION OK" : "EN COURS"}</span></div>
-              <div>ENIGMES: <span style={{ color: accent }}>{solved}/{total}</span></div>
-              <div>NIVEAU: <span style={{ color: accent }}>{level.name.slice(0, 14).toUpperCase()}</span></div>
+
+          <div
+            style={{
+              width: "100%",
+              background: isDark
+                ? "rgba(0,4,0,0.8)"
+                : "rgba(240,250,240,0.9)",
+              border: "1px solid var(--border)",
+              borderRadius: 8,
+              padding: "12px 14px",
+            }}
+          >
+            <div
+              style={{
+                color: "var(--green-dim)",
+                fontFamily: "var(--font-hud)",
+                fontSize: 8,
+                letterSpacing: 3,
+                marginBottom: 7,
+                opacity: 0.7,
+              }}
+            >
+              ● AGENT DE MISSION
+            </div>
+
+            <div
+              style={{
+                color: "var(--text-dim)",
+                fontSize: 11,
+                fontFamily: "var(--font-mono)",
+                lineHeight: 1.9,
+              }}
+            >
+              <div>
+                STATUS:{" "}
+                <span style={{ color: complete ? "var(--green)" : accent }}>
+                  {complete ? "MISSION OK" : "EN COURS"}
+                </span>
+              </div>
+              <div>
+                ENIGMES:{" "}
+                <span style={{ color: accent }}>
+                  {solved}/{total}
+                </span>
+              </div>
+              <div>
+                NIVEAU:{" "}
+                <span style={{ color: accent }}>
+                  {level.name.slice(0, 14).toUpperCase()}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -995,6 +1266,7 @@ function LevelView({ level, levelIndex, onBadge, theme }: { level: LevelOut; lev
     </div>
   );
 }
+
 
 // ═══════════════════════════════════════════════════════════════════
 // GAME TAB avec navigation
