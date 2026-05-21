@@ -3,6 +3,7 @@ import { gameApi, type LevelOut, type EnigmaOut, type LeaderboardEntry, type Bad
 import { useAuth } from "../hooks/useAuth";
 import robotPhantom from "../assets/robot_phantom.png";
 import CyberpunkRobotImage from "../components/CyberpunkRobotImage";
+import robotLeaderboard from "../asset/robot.png";
 
 type Theme = "dark" | "light";
 
@@ -583,6 +584,77 @@ function Leaderboard({ theme }: { theme: Theme }) {
   if (loading) return <div style={{ textAlign:"center", padding:60, color:"var(--green-dim)", fontFamily:"var(--font-mono)" }}><div style={{ fontSize:28, marginBottom:12, animation:"pulse 1.5s ease infinite" }}>⚡</div>Chargement...</div>;
   return (
     <div style={{ animation:"fadeUp .3s ease" }}>
+
+      {/* ── Robot bannière animée ── */}
+      <div style={{
+        position:"relative", display:"flex", alignItems:"center", justifyContent:"center",
+        marginBottom:32, padding:"28px 0 0", overflow:"hidden",
+      }}>
+        {/* Halo de fond */}
+        <div style={{
+          position:"absolute", top:"50%", left:"50%",
+          transform:"translate(-50%,-50%)",
+          width:320, height:160,
+          background: isDark
+            ? "radial-gradient(ellipse, rgba(0,255,65,0.12) 0%, transparent 70%)"
+            : "radial-gradient(ellipse, rgba(0,153,34,0.10) 0%, transparent 70%)",
+          pointerEvents:"none",
+        }}/>
+
+        {/* Robot image */}
+        <div style={{
+          position:"relative",
+          animation:"leaderRobotFloat 3.5s ease-in-out infinite",
+          filter: isDark
+            ? "drop-shadow(0 0 28px rgba(0,255,65,0.5)) drop-shadow(0 18px 18px rgba(0,0,0,0.7))"
+            : "drop-shadow(0 0 20px rgba(0,153,34,0.4)) drop-shadow(0 16px 16px rgba(0,0,0,0.25))",
+        }}>
+          <img
+            src={robotLeaderboard}
+            alt="Robot classement"
+            style={{ width:160, height:160, objectFit:"contain", userSelect:"none", pointerEvents:"none" }}
+          />
+          {/* Ombre au sol */}
+          <div style={{
+            position:"absolute", bottom:-14, left:"50%",
+            transform:"translateX(-50%)",
+            width:90, height:18,
+            background: isDark ? "rgba(0,255,65,0.22)" : "rgba(0,100,30,0.18)",
+            filter:"blur(10px)",
+            borderRadius:"50%",
+            animation:"leaderShadow 3.5s ease-in-out infinite",
+          }}/>
+        </div>
+
+        {/* Titre à droite du robot */}
+        <div style={{ marginLeft:28, display:"flex", flexDirection:"column", gap:6 }}>
+          <div style={{ color:"var(--green-dim)", fontFamily:"var(--font-hud)", fontSize:9, letterSpacing:4 }}>
+            ● CLASSEMENT EN DIRECT
+          </div>
+          <h2 style={{ fontFamily:"var(--font-hud)", fontSize:26, fontWeight:900, color:"var(--green)", letterSpacing:4, lineHeight:1, textShadow: isDark ? "0 0 20px rgba(0,255,65,0.4)" : "none" }}>
+            CLASSEMENT
+          </h2>
+          <div style={{ fontFamily:"var(--font-hud)", fontSize:14, color:"var(--cyan)", letterSpacing:3 }}>
+            MONDIAL
+          </div>
+          <div style={{ color:"var(--text-dim)", fontSize:11, fontFamily:"var(--font-mono)", marginTop:4 }}>
+            {entries.length} agent{entries.length > 1 ? "s" : ""} classé{entries.length > 1 ? "s" : ""}
+          </div>
+        </div>
+
+        {/* Keyframes inline */}
+        <style>{`
+          @keyframes leaderRobotFloat {
+            0%,100% { transform: translateY(0px) rotate(-0.5deg); }
+            50%      { transform: translateY(-12px) rotate(0.5deg); }
+          }
+          @keyframes leaderShadow {
+            0%,100% { transform: translateX(-50%) scale(1);   opacity: 0.8; }
+            50%      { transform: translateX(-50%) scale(0.7); opacity: 0.4; }
+          }
+        `}</style>
+      </div>
+
       <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:24 }}><span style={{ fontSize:28 }}>🏆</span><h2 style={{ fontFamily:"var(--font-hud)", fontSize:20, color:"var(--green)" }}>CLASSEMENT MONDIAL</h2></div>
       <div style={{ display:"grid", gridTemplateColumns:"50px 1fr 120px 80px 100px", gap:8, padding:"8px 14px", color:"var(--text-dim)", fontFamily:"var(--font-hud)", fontSize:9, letterSpacing:2, borderBottom:"1px solid var(--border)", marginBottom:8 }}>
         <span>#</span><span>AGENT</span><span>NIVEAU</span><span>BADGES</span><span style={{ textAlign:"right" }}>SCORE</span>
