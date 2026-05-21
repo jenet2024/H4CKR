@@ -5,6 +5,12 @@ import robotPhantom from "../assets/robot_phantom.png";
 import CyberpunkRobotImage from "../components/CyberpunkRobotImage";
 
 
+
+const BADGE_TO_ENIGMA: Record<string, string> = {
+  first_blood: "base64_message",
+  decoder: "caesar_cipher",
+};
+
 // ═══════════════════════════════════════════════════════════════════
 // THEME SYSTEM
 // ═══════════════════════════════════════════════════════════════════
@@ -881,6 +887,32 @@ const LEVEL_COLORS_LIGHT = ["#009922", "#0077cc", "#996600", "#7711cc", "#cc0022
 function LevelView({ level, levelIndex, onBadge, theme }: { level: LevelOut; levelIndex: number; onBadge: (b: BadgeOut) => void; theme: Theme }) {
   const [robotDone, setRobotDone] = useState(false);
   const [enigmas, setEnigmas] = useState<EnigmaOut[]>([...level.enigmas].sort((a, b) => a.order - b.order));
+
+  useEffect(() => {
+  async function loadProgress() {
+    try {
+      const badges = await gameApi.myBadges();
+      const solvedBadges = new Set(badges.map(b => b.slug));
+
+      setEnigmas(prev =>
+        prev.map(e => {
+          const solved =
+            solvedBadges.has(e.slug) ||
+            [...solvedBadges].some(b => BADGE_TO_ENIGMA[b] === e.slug);
+
+          return { ...e, solved };
+        })
+      );
+    } catch (err) {
+      console.error("Impossible de charger la progression", err);
+    }
+  }
+
+  loadProgress();
+}, []);
+
+
+
   const [genCert, setGenCert] = useState(false);
   const isDark = theme === "dark";
   const accent = (isDark ? LEVEL_COLORS_DARK : LEVEL_COLORS_LIGHT)[levelIndex % 5];
