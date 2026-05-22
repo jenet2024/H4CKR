@@ -779,6 +779,13 @@ function ContactPage({ theme }: { theme: Theme }) {
           <p style={{ color:"var(--text-dim)", marginTop:4, fontSize:13 }}>Un bug ? Une question ? L'équipe vous répond sous 48h.</p>
         </div>
       </div>
+      <img
+  src="/assets/enigmas/support.png"
+  alt="illustration"
+  className="img-float-glow"
+  style={{ width: "260px" }}
+/>
+
       <div style={{ marginBottom:28 }}>
         {[
           { q:"Ma réponse n'est pas acceptée", a:"Les réponses sont insensibles à la casse. Essayez sans espaces, en MAJUSCULES, en minuscules, et sans accents." },
@@ -914,6 +921,20 @@ export default function GamePage() {
           {tab==="guide"       && <GuidePage theme={theme}/>}
           {tab==="contact"     && <ContactPage theme={theme}/>}
         </main>
+          {/* IMAGE TOUT EN BAS DE LA PAGE */}
+{/* <div style={{ width: "100%", textAlign: "center", marginTop: 40 }}>
+  <img
+    src="/assets/enigmas/mon_robot.png"
+    alt="illustration"
+    className="img-float"
+    style={{
+      width: "280px",
+      opacity: 0.9,
+      filter: "drop-shadow(0 0 12px #00ff41)",
+    }}
+  />
+</div> */}
+
 
         <footer style={{ textAlign:"center", padding:"18px", borderTop:"1px solid var(--border-nav)", color:"var(--text-dim)", fontFamily:"var(--font-mono)", fontSize:10 }}>
           H4CKR © 2025 — Escape Game Cybersécurité — <span style={{ color:"var(--green-dim)" }}>ALL SYSTEMS OPERATIONAL</span>
