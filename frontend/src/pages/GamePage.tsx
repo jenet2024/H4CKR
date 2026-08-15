@@ -3,7 +3,9 @@ import { gameApi, type LevelOut, type EnigmaOut, type LeaderboardEntry, type Bad
 import { useAuth } from "../hooks/useAuth";
 import robotPhantom from "../assets/robot_phantom.png";
 import CyberpunkRobotImage from "../components/CyberpunkRobotImage";
-import robotLeaderboard from "../asset/robot.png";
+import Robot from "../asset/robot.png"; // ← nouvea
+import Guide from "../asset/guide.png";
+
 
 type Theme = "dark" | "light";
 
@@ -497,8 +499,43 @@ function LevelView({ level, levelIndex, onBadge, theme }: { level: LevelOut; lev
         {/* Robot colonne droite */}
         <div style={{ width:225, flexShrink:0, position:"sticky", top:76, display:"flex", flexDirection:"column", alignItems:"center", gap:14 }}>
           <div style={{ padding:"18px 8px", background:isDark?"rgba(0,6,0,0.7)":"rgba(240,250,240,0.9)", border:`1px solid ${accent}22`, borderRadius:12, width:"100%", display:"flex", justifyContent:"center", position:"relative", overflow:"hidden" }}>
+            {/* Fond radial */}
             <div style={{ position:"absolute", inset:0, background:`radial-gradient(ellipse at center bottom,${accent}07 0%,transparent 70%)` }}/>
-            <CyberpunkRobotImage src={robotPhantom} theme={theme} size={260} animate={true}/>
+
+            {/* Paillettes animées */}
+            <div style={{ position:"absolute", inset:0, pointerEvents:"none", overflow:"hidden" }}>
+              {[
+                { top:"8%",  left:"12%", size:4, delay:0,    dur:2.1 },
+                { top:"15%", left:"78%", size:3, delay:0.4,  dur:1.8 },
+                { top:"30%", left:"88%", size:5, delay:0.8,  dur:2.4 },
+                { top:"55%", left:"6%",  size:3, delay:1.2,  dur:1.9 },
+                { top:"70%", left:"82%", size:4, delay:0.6,  dur:2.2 },
+                { top:"85%", left:"20%", size:3, delay:1.5,  dur:2.0 },
+                { top:"22%", left:"45%", size:2, delay:0.3,  dur:1.7 },
+                { top:"60%", left:"55%", size:3, delay:1.0,  dur:2.3 },
+                { top:"42%", left:"92%", size:2, delay:1.8,  dur:1.6 },
+                { top:"75%", left:"35%", size:4, delay:0.9,  dur:2.5 },
+              ].map((p, i) => (
+                <div key={i} style={{
+                  position:"absolute", top:p.top, left:p.left,
+                  width:p.size, height:p.size,
+                  borderRadius:"50%",
+                  background: i % 3 === 0 ? "rgba(120,0,30,0.9)" : i % 3 === 1 ? "rgba(0,255,65,0.8)" : "rgba(255,215,0,0.7)",
+                  boxShadow: i % 3 === 0 ? "0 0 4px rgba(120,0,30,0.8)" : i % 3 === 1 ? "0 0 4px rgba(0,255,65,0.6)" : "0 0 4px rgba(255,215,0,0.6)",
+                  animation:`sparkle ${p.dur}s ease-in-out ${p.delay}s infinite`,
+                }}/>
+              ))}
+            </div>
+
+            <CyberpunkRobotImage src={Robot} theme={theme} size={260} animate={true}/>
+
+            {/* Keyframes paillettes */}
+            <style>{`
+              @keyframes sparkle {
+                0%,100% { opacity:0; transform:scale(0.5) rotate(0deg); }
+                50% { opacity:1; transform:scale(1.3) rotate(180deg); }
+              }
+            `}</style>
           </div>
           <div style={{ width:"100%", background:isDark?"rgba(0,4,0,0.8)":"rgba(240,250,240,0.9)", border:"1px solid var(--border)", borderRadius:8, padding:"12px 14px" }}>
             <div style={{ color:"var(--green-dim)", fontFamily:"var(--font-hud)", fontSize:8, letterSpacing:3, marginBottom:7, opacity:0.7 }}>● AGENT DE MISSION</div>
@@ -610,7 +647,7 @@ function Leaderboard({ theme }: { theme: Theme }) {
             : "drop-shadow(0 0 20px rgba(0,153,34,0.4)) drop-shadow(0 16px 16px rgba(0,0,0,0.25))",
         }}>
           <img
-            src={robotLeaderboard}
+            src={robotPhantom}
             alt="Robot classement"
             style={{ width:160, height:160, objectFit:"contain", userSelect:"none", pointerEvents:"none" }}
           />
@@ -713,21 +750,116 @@ function BadgesPage({ theme }: { theme: Theme }) {
 // ── Guide ─────────────────────────────────────────────────────────
 function GuidePage({ theme }: { theme: Theme }) {
   const isDark = theme === "dark";
+  const [activeCard, setActiveCard] = useState<number | null>(null);
+  const [typedText, setTypedText] = useState("");
+  const fullText = "NEXUS-7 > Bienvenue Agent. Ce guide contient tout ce qu'il faut savoir pour compléter vos missions. Lisez attentivement chaque section avant de commencer.";
+
+  useEffect(() => {
+    let i = 0; setTypedText("");
+    const id = setInterval(() => { if (i < fullText.length) { setTypedText(fullText.slice(0, ++i)); } else clearInterval(id); }, 22);
+    return () => clearInterval(id);
+  }, []);
+
   const sections = [
-    { icon:"🎮", title:"Comment jouer", content:"H4CKR est un escape game de cybersécurité. Vous êtes un hacker éthique recruté par une agence secrète. Chaque niveau est une mission : analyser des fichiers suspects, déchiffrer des messages, infiltrer des serveurs fictifs. Résolvez les énigmes dans l'ordre pour débloquer la suivante." },
-    { icon:"🔒", title:"Mots de passe forts", content:"Un bon mot de passe : 12+ caractères, majuscules, minuscules, chiffres ET symboles spéciaux.\nExemple fort : P@ssw0rd!2024#Zx\nExemple faible : 123456 ou password" },
-    { icon:"🎣", title:"Phishing", content:"Vérifiez toujours l'adresse email de l'expéditeur.\nUn domaine falsifié remplace une lettre par un chiffre (paypa1 au lieu de paypal).\nNe cliquez jamais sur un lien urgent sans vérifier." },
-    { icon:"🔄", title:"Chiffrement César / ROT13", content:"ROT13 = chaque lettre décalée de 13 positions. A→N, H→U, etc.\nDans le terminal : caesar <texte> 13\nOu utilisez rot13.com." },
-    { icon:"🖼️", title:"Stéganographie", content:"Un indice est caché dans l'image — survolez-la avec la souris pour le révéler.\nLa zone encadrée indique où chercher." },
-    { icon:"🎧", title:"Analyse Audio", content:"Écoutez attentivement les syllabes prononcées.\nReconstituez le mot dans le bon ordre et entrez-le en majuscules." },
-    { icon:"💻", title:"Terminal interactif", content:"Commandes : help · ls · cat <f> · decode <t> · caesar <t> <n> · extract <f> · scan <ip> · connect <h> <p> · clear\n↑/↓ pour naviguer dans l'historique" },
-    { icon:"💡", title:"Conseils de pro", content:"• Lisez TOUT le texte — les indices sont dans la description\n• Essayez majuscules, minuscules, sans espaces\n• 3ème indice = -30 pts au total\n• Le certificat PDF se génère quand le niveau est 100% complété" },
+    { icon:"🎮", title:"Comment jouer", color:"#00ff41", colorLight:"#009922",
+      content:"H4CKR est un escape game de cybersécurité. Vous êtes un hacker éthique recruté par une agence secrète. Chaque niveau est une mission : analyser des fichiers suspects, déchiffrer des messages, infiltrer des serveurs fictifs. Résolvez les énigmes dans l'ordre pour débloquer la suivante.",
+      tip:"Lisez toujours la description complète de chaque énigme." },
+    { icon:"🔒", title:"Mots de passe forts", color:"#00e5ff", colorLight:"#0077cc",
+      content:"Un bon mot de passe : 12+ caractères, majuscules, minuscules, chiffres ET symboles spéciaux.\nExemple fort : P@ssw0rd!2024#Zx\nExemple faible : 123456 ou password",
+      tip:"Cherchez le mot de passe qui respecte TOUTES les règles." },
+    { icon:"🎣", title:"Phishing", color:"#ff9900", colorLight:"#996600",
+      content:"Vérifiez toujours l'adresse email de l'expéditeur.\nUn domaine falsifié remplace une lettre par un chiffre (paypa1 au lieu de paypal).\nNe cliquez jamais sur un lien urgent sans vérifier.",
+      tip:"Regardez chaque caractère du domaine — un seul suffit à trahir l'arnaque." },
+    { icon:"🔄", title:"Chiffrement César / ROT13", color:"#cc44ff", colorLight:"#7711cc",
+      content:"ROT13 = chaque lettre décalée de 13 positions. A→N, H→U, etc.\nDans le terminal : caesar <texte> 13\nOu utilisez rot13.com.",
+      tip:"Appliquez ROT13 deux fois pour revenir au texte d'origine." },
+    { icon:"🖼️", title:"Stéganographie", color:"#ff4488", colorLight:"#cc1155",
+      content:"Un indice est caché dans l'image — survolez-la avec la souris pour le révéler.\nLa zone encadrée indique où chercher.",
+      tip:"Passez lentement la souris sur toute la surface de l'image." },
+    { icon:"🎧", title:"Analyse Audio", color:"#ff6b35", colorLight:"#cc3300",
+      content:"Écoutez attentivement les syllabes prononcées.\nReconstituez le mot dans le bon ordre et entrez-le en majuscules.",
+      tip:"Notez chaque syllabe sur papier avant de les assembler." },
+    { icon:"💻", title:"Terminal interactif", color:"#00ff41", colorLight:"#009922",
+      content:"Commandes : help · ls · cat <f> · decode <t> · caesar <t> <n> · extract <f> · scan <ip> · connect <h> <p> · clear\n↑/↓ pour naviguer dans l'historique",
+      tip:"Tapez 'help' pour voir toutes les commandes disponibles." },
+    { icon:"💡", title:"Conseils de pro", color:"#ffd700", colorLight:"#997700",
+      content:"• Lisez TOUT le texte — les indices sont dans la description\n• Essayez majuscules, minuscules, sans espaces\n• 3ème indice = -30 pts au total\n• Le certificat PDF se génère quand le niveau est 100% complété",
+      tip:"Les réponses sont insensibles à la casse — essayez plusieurs variantes." },
   ];
+
   return (
     <div style={{ animation:"fadeUp .3s ease" }}>
-      <div style={{ display:"flex", alignItems:"center", gap:16, marginBottom:30 }}>
-        <div style={{ animation:"robotFloat 3s ease-in-out infinite" }}>
-          <svg width="50" height="62" viewBox="0 0 72 88" fill="none">
+
+      {/* ── HERO ── */}
+      <div style={{ position:"relative", marginBottom:36, padding:"28px 24px", background:isDark?"rgba(0,6,0,0.92)":"rgba(236,250,236,0.95)", border:"1px solid var(--border)", borderRadius:12, overflow:"hidden" }}>
+        <div style={{ position:"absolute", inset:0, backgroundImage:`linear-gradient(var(--border-hud) 1px,transparent 1px),linear-gradient(90deg,var(--border-hud) 1px,transparent 1px)`, backgroundSize:"32px 32px", pointerEvents:"none" }}/>
+        <div style={{ position:"absolute", top:0, left:0, right:0, height:2, background:"linear-gradient(90deg,transparent,var(--green),transparent)" }}/>
+        <div style={{ display:"flex", alignItems:"center", gap:28, position:"relative", zIndex:1, flexWrap:"wrap" }}>
+          {/* Robot phantom avec ombre rouge — même que page Jeu */}
+          <div style={{ flexShrink:0, position:"relative" }}>
+            {/* Halo rouge derrière */}
+            <div style={{ position:"absolute", inset:0, background:"rgba(120,0,30,0.25)", filter:"blur(30px)", borderRadius:20, animation:"glowPulse 4s ease-in-out infinite" }}/>
+            {/* Image robot */}
+            <div style={{ position:"relative", animation:"robotFloat 3.5s ease-in-out infinite", filter:"drop-shadow(0 0 22px rgba(120,0,30,0.6)) drop-shadow(0 0 8px rgba(0,255,65,0.2))" }}>
+              <img src={Guide} alt="NEXUS-7" style={{ width:160, height:160, objectFit:"contain", userSelect:"none", pointerEvents:"none" }}/>
+            </div>
+            {/* Ombre au sol */}
+            <div style={{ position:"absolute", bottom:-10, left:"50%", transform:"translateX(-50%)", width:90, height:18, background:"rgba(120,0,30,0.35)", filter:"blur(10px)", borderRadius:"50%", animation:"shadowPulse 3.5s ease-in-out infinite" }}/>
+          </div>
+          <div style={{ flex:1, minWidth:260 }}>
+            <div style={{ color:"var(--green)", fontFamily:"var(--font-hud)", fontSize:9, letterSpacing:4, marginBottom:6, opacity:0.7 }}>● NEXUS-7 — MODULE FORMATION</div>
+            <h2 style={{ fontFamily:"var(--font-hud)", fontSize:24, fontWeight:900, color:"var(--green)", letterSpacing:4, marginBottom:12, textShadow:isDark?"0 0 20px rgba(0,255,65,.35)":"none" }}>GUIDE DE JEU</h2>
+            <div style={{ background:isDark?"rgba(0,0,0,0.4)":"rgba(220,240,220,0.6)", border:"1px solid var(--border)", borderRadius:6, padding:"11px 14px", fontFamily:"var(--font-mono)", fontSize:12, color:"var(--text)", lineHeight:1.7, minHeight:48 }}>
+              <span style={{ color:"var(--green)" }}>&gt; </span>{typedText}
+              <span style={{ animation:"typeBar .8s step-end infinite", color:"var(--green)" }}>█</span>
+            </div>
+          </div>
+          <div style={{ display:"flex", flexDirection:"column", gap:8, flexShrink:0 }}>
+            {[{ label:"SECTIONS", value:sections.length, color:"var(--green)" },{ label:"NIVEAUX", value:"2", color:"var(--cyan)" },{ label:"ÉNIGMES", value:"9+", color:"var(--gold)" }].map((s,i) => (
+              <div key={i} style={{ background:isDark?"rgba(0,0,0,0.4)":"rgba(220,240,220,0.6)", border:`1px solid ${s.color}30`, borderRadius:6, padding:"8px 16px", textAlign:"center", minWidth:78 }}>
+                <div style={{ fontFamily:"var(--font-hud)", fontSize:20, fontWeight:900, color:s.color }}>{s.value}</div>
+                <div style={{ fontFamily:"var(--font-hud)", fontSize:8, color:"var(--text-dim)", letterSpacing:2 }}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── CARDS ── */}
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(340px,1fr))", gap:14 }}>
+        {sections.map((s,i) => {
+          const col = isDark ? s.color : s.colorLight;
+          const isActive = activeCard === i;
+          return (
+            <div key={i} className="game-card"
+              onMouseEnter={() => setActiveCard(i)} onMouseLeave={() => setActiveCard(null)}
+              style={{ padding:22, animation:`fadeUp .35s ease ${i*.06}s both`, cursor:"pointer", transition:"transform .2s,box-shadow .2s,border-color .2s", transform:isActive?"translateY(-4px)":"translateY(0)", boxShadow:isActive?`0 8px 28px ${col}20`:"none", borderColor:isActive?`${col}40`:"var(--border)" }}>
+              <div style={{ position:"absolute", top:0, left:0, right:0, height:3, background:`linear-gradient(90deg,transparent,${col},transparent)`, opacity:isActive?1:0.3, transition:"opacity .2s" }}/>
+              <div style={{ display:"flex", gap:14, alignItems:"flex-start" }}>
+                <div style={{ width:46, height:46, borderRadius:10, background:`${col}12`, border:`1px solid ${col}35`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:22, flexShrink:0, boxShadow:isActive?`0 0 14px ${col}30`:"none", transition:"box-shadow .2s" }}>
+                  {s.icon}
+                </div>
+                <div style={{ flex:1 }}>
+                  <h3 style={{ fontFamily:"var(--font-hud)", fontSize:11, color:col, letterSpacing:2, marginBottom:10 }}>{s.title.toUpperCase()}</h3>
+                  <p style={{ color:"var(--text)", fontSize:12.5, lineHeight:1.75, whiteSpace:"pre-line", marginBottom:12 }}>{s.content}</p>
+                  <div style={{ display:"flex", gap:8, alignItems:"flex-start", padding:"9px 12px", background:`${col}08`, border:`1px solid ${col}20`, borderRadius:5, borderLeft:`3px solid ${col}` }}>
+                    <span style={{ fontSize:12, flexShrink:0 }}>💡</span>
+                    <span style={{ fontSize:11, color:col, fontFamily:"var(--font-mono)", lineHeight:1.5, opacity:0.9 }}>{s.tip}</span>
+                  </div>
+                </div>
+              </div>
+              <div style={{ position:"absolute", bottom:8, right:14, fontFamily:"var(--font-hud)", fontSize:40, fontWeight:900, color:col, opacity:0.04, lineHeight:1, userSelect:"none" }}>
+                {String(i+1).padStart(2,"0")}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── FOOTER ── */}
+      <div style={{ marginTop:30, padding:"18px 22px", background:isDark?"rgba(0,6,0,0.8)":"rgba(236,250,236,0.9)", border:"1px solid var(--border)", borderRadius:8, display:"flex", alignItems:"center", gap:16, flexWrap:"wrap" }}>
+        <div style={{ animation:"robotFloat 3s ease-in-out infinite", flexShrink:0 }}>
+          <svg width="34" height="42" viewBox="0 0 72 88" fill="none">
             <circle cx="36" cy="3" r="3" fill="var(--green)"/>
             <line x1="36" y1="0" x2="36" y2="10" stroke="var(--green)" strokeWidth="2"/>
             <rect x="12" y="10" width="48" height="36" rx="6" fill={isDark?"#050d05":"#e8f4e8"} stroke="var(--green)" strokeWidth="1.5"/>
@@ -736,23 +868,17 @@ function GuidePage({ theme }: { theme: Theme }) {
             <rect x="8" y="52" width="56" height="32" rx="6" fill={isDark?"#050d05":"#e8f4e8"} stroke="var(--green)" strokeWidth="1.5"/>
           </svg>
         </div>
-        <div>
-          <h2 style={{ fontFamily:"var(--font-hud)", fontSize:22, color:"var(--green)" }}>GUIDE DE JEU</h2>
-          <p style={{ color:"var(--text-dim)", marginTop:4, fontSize:13 }}>Tout ce qu'il faut savoir pour devenir un vrai hacker</p>
-        </div>
-      </div>
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(340px,1fr))", gap:14 }}>
-        {sections.map((s,i) => (
-          <div key={i} className="game-card" style={{ padding:22, animation:`fadeUp .3s ease ${i*.05}s both` }}>
-            <div style={{ display:"flex", gap:12, alignItems:"flex-start" }}>
-              <span style={{ fontSize:26, flexShrink:0 }}>{s.icon}</span>
-              <div>
-                <h3 style={{ fontFamily:"var(--font-hud)", fontSize:12, color:"var(--green)", letterSpacing:2, marginBottom:9 }}>{s.title.toUpperCase()}</h3>
-                <p style={{ color:"var(--text)", fontSize:13, lineHeight:1.75, whiteSpace:"pre-line" }}>{s.content}</p>
-              </div>
-            </div>
+        <div style={{ flex:1 }}>
+          <div style={{ fontFamily:"var(--font-hud)", fontSize:9, color:"var(--green)", letterSpacing:2, marginBottom:4 }}>NEXUS-7 — CONSEIL FINAL</div>
+          <div style={{ fontFamily:"var(--font-mono)", fontSize:12, color:"var(--text-dim)", lineHeight:1.6, fontStyle:"italic" }}>
+            "La patience est la première compétence d'un bon hacker. Lisez, observez, analysez — les réponses sont toujours dans les détails."
           </div>
-        ))}
+        </div>
+        <div style={{ display:"flex", gap:8 }}>
+          {["🔐","🎯","⚡","🏆"].map((e,i) => (
+            <div key={i} style={{ width:36, height:36, borderRadius:8, background:"var(--green-faint)", border:"1px solid var(--border)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, animation:`pulse ${1.5+i*.3}s ease-in-out infinite` }}>{e}</div>
+          ))}
+        </div>
       </div>
     </div>
   );
