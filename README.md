@@ -4,6 +4,13 @@ Application web full-stack (React + FastAPI + MySQL), déployée via Docker.
 **Plus de `.exe` — tout tourne dans le navigateur.**
 
 ---
+## 📸 Aperçu du projet
+
+![Auth](screenshots/auth.png)
+![Cesar](screenshots/cesar.png)
+![Imge](screenshots/imge_suspecte.png)
+![Log](screenshots/log.png)
+![Ssh](screenshots/ssh.png)
 
 ## Architecture
 
@@ -52,6 +59,7 @@ docker-compose up --build -d
 
 ---
 
+
 ## Développement local (sans Docker)
 
 ### Backend
@@ -61,6 +69,8 @@ python -m venv venv
 source venv/bin/activate   # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
+
+
 # Créez un .env ou exportez les variables :
 export DATABASE_URL="mysql+pymysql://root:root@localhost:3306/h4ckr_game"
 export SECRET_KEY="dev_secret_key"
@@ -68,6 +78,9 @@ export FRONTEND_URL="http://localhost:5173"
 
 uvicorn main:app --reload --port 8000
 ```
+
+
+
 
 ### Frontend
 ```bash
@@ -80,6 +93,7 @@ npm run dev
 ```
 
 ---
+![Swagger](screenshots/swagger.png)
 
 ## Variables d'environnement importantes
 
@@ -123,3 +137,6 @@ npm run dev
 - `GET  /game/leaderboard` — Classement
 - `GET  /game/my-badges` — Mes badges
 - `POST /game/certificate/{slug}` — Générer certificat PDF
+
+![Certif](screenshots/certif.png)
+
